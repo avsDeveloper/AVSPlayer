@@ -1,20 +1,47 @@
 package com.example.avsplayer.presentation
 
+import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
-import androidx.media3.session.MediaSessionService
+import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListenableFuture
+import dagger.hilt.android.AndroidEntryPoint
 
-class PlaybackService : MediaSessionService() {
-    private var mediaSession: MediaSession? = null
+@AndroidEntryPoint
+class PlaybackService() : MediaLibraryService() {
 
-    // Create your Player and MediaSession in the onCreate lifecycle event
+    private var mediaSession: MediaLibrarySession? = null
+    private lateinit var player: ExoPlayer
+
     override fun onCreate() {
         super.onCreate()
-        val player = ExoPlayer.Builder(this).build()
-        mediaSession = MediaSession.Builder(this, player).build()
+
+        player = ExoPlayer
+            .Builder(this)
+            .build()
+
+        mediaSession = MediaLibrarySession
+            .Builder(
+                this,
+                player,
+                object: MediaLibrarySession.Callback {
+                    override fun onAddMediaItems(
+                        mediaSession: MediaSession,
+                        controller: MediaSession.ControllerInfo,
+                        mediaItems: MutableList<MediaItem>
+                    ): ListenableFuture<MutableList<MediaItem>> {
+
+                        val updatedMediaItems = mediaItems
+                            .map { it.buildUpon().setUri(it.mediaId).build() }
+                            .toMutableList()
+
+                        return Futures.immediateFuture(updatedMediaItems)
+
+                    }
+                }).build()
     }
 
-    // Remember to release the player and media session in onDestroy
     override fun onDestroy() {
         mediaSession?.run {
             player.release()
@@ -24,5 +51,5 @@ class PlaybackService : MediaSessionService() {
         super.onDestroy()
     }
 
-    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? = mediaSession
 }
