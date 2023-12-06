@@ -12,6 +12,15 @@ class MainActivityViewModel @Inject constructor(): ViewModel() {
     private val _uiState = MutableStateFlow<UIState>(UIState.Initiated)
     val uiState = _uiState.asStateFlow()
 
+    private val _isBottomSheetShown = MutableStateFlow<Boolean>(false)
+    val isBottomSheetShown = _isBottomSheetShown.asStateFlow()
+
+    private val _isFinished = MutableStateFlow<Boolean>(false)
+    val isFinished = _isFinished.asStateFlow()
+
+    fun setInitialized() {
+        _uiState.value = UIState.Initiated
+    }
     fun setReady() {
         _uiState.value = UIState.Ready
     }
@@ -20,10 +29,28 @@ class MainActivityViewModel @Inject constructor(): ViewModel() {
         _uiState.value = UIState.Selected
     }
 
+    fun showBottomSheet() {
+        _isBottomSheetShown.value = true
+    }
+
+    fun hideBottomSheet() {
+        _isBottomSheetShown.value = false
+    }
+
+    fun setFinished() {
+        _isFinished.value = true
+    }
+
 }
 
 sealed class UIState {
-    object Selected: UIState()
+
+    // Initial state
     object Initiated: UIState()
+
+    // Media file selected, show Progress bar
+    object Selected: UIState()
+
+    // Media file ready, show Player
     object Ready: UIState()
 }

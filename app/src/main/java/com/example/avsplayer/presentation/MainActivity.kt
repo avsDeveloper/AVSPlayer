@@ -5,33 +5,38 @@ import android.content.ComponentName
 import android.content.Intent
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.ResultReceiver
-import android.window.OnBackInvokedDispatcher
+import android.view.WindowInsets
+import android.view.WindowInsetsController
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
-import androidx.media3.session.SessionCommands
 import androidx.media3.session.SessionToken
 import com.example.avsplayer.presentation.theme.AVSPlayerTheme
 import com.example.avsplayer.presentation.view.AVSPlayerView
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
@@ -42,82 +47,125 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
     private var uri: Uri? = null
     lateinit var player: Player
 
+    private val onBackPressedCallback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() { viewModel.showBottomSheet() }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // finish activity and session if true
+        lifecycleScope.launch {
+            viewModel.isFinished.collect { isFinished ->
+                if (isFinished)  {
+                    val stopIntent = Intent(this@MainActivity, PlaybackService::class.java)
+                    stopIntent.action = "stop_PlaybackService"
+                    startService(stopIntent)
+                    finish()
+                }
+            }
+        }
+
+
+        // here we set Compose UI. Trying to figure out how it works ))
         setContent {
             AVSPlayerTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = Color.Black
                 ) {
                     PlayerScreen()
                 }
             }
         }
 
-        val resultReceiver = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if(it.resultCode == Activity.RESULT_OK){
+        // remove toolbar, etc. to show player in full screen mode
+        setFullScreen()
+
+        // show bottom sheet dialog instead of closing the app
+        onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
+
+        // set "Selected" UI state if media files picked
+        val resultReceiver = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) {
+            if (it.resultCode == Activity.RESULT_OK){
                 uri = it.data?.data
                 viewModel.setSelected()
             }
         }
 
+        // intent to open standard Android file browser to pick audio / video file
         val pickMediaIntent = Intent()
             .apply {
-                type = "*/*"
+                addCategory(Intent.CATEGORY_OPENABLE)
                 action = Intent.ACTION_OPEN_DOCUMENT
+                type = "*/*"
+                putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("audio/*", "video/*"))
             }
 
         resultReceiver.launch(pickMediaIntent)
     }
 
+    @Suppress("DEPRECATION")
+    private fun setFullScreen() {
+        actionBar?.hide()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        } else {
+            window.insetsController?.apply {
+                hide(WindowInsets.Type.statusBars())
+                systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun PlayerScreen() {
         val uiState = viewModel.uiState.collectAsStateWithLifecycle()
+        val isBottomSheetShown = viewModel.isBottomSheetShown.collectAsStateWithLifecycle()
 
         when (uiState.value) {
 
+            // show player
             UIState.Ready -> {
                 AVSPlayerView(
-                    controllerFuture.get()
+                    controllerFuture.get(),
+                    isBottomSheetShown.value,
+                    viewModel
                 )
             }
 
+            // create media session and show progress bar
             UIState.Selected -> {
                 val sessionToken = SessionToken(
                     this,
                     ComponentName(this, PlaybackService::class.java)
                 )
-
                 controllerFuture = MediaController
                     .Builder(this, sessionToken)
                     .buildAsync()
-
                 controllerFuture.addListener(
                     {
                         viewModel.setReady()
-
                         uri?.let {
-
                             val mediaItem = createMediaItem()
                             player = controllerFuture.get()
                             player.setMediaItem(mediaItem)
                             player.prepare()
                             player.play()
                         }
-
                     },
                     MoreExecutors.directExecutor()
                 )
             }
 
-            else -> {
-                Text(text = "asdfdaderb")
-            }
+            // show nothing, here we have file picker open =)
+            else -> {}
         }
     }
-
 
     private fun createMediaItem() : MediaItem {
 
@@ -140,10 +188,6 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
 
     override fun onStop() {
         super.onStop()
-    }
-
-    override fun onBackPressed() {
-        super.onBackPressed()
-        finish()
+        // ToDo check what needs to be disposed here to prevent memleaks
     }
 }
