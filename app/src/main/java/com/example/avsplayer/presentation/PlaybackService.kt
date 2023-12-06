@@ -1,6 +1,10 @@
 package com.example.avsplayer.presentation
 
+import android.app.PendingIntent
+import android.content.Intent
+import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
@@ -40,6 +44,31 @@ class PlaybackService() : MediaLibraryService() {
 
                     }
                 }).build()
+
+        setSessionActivity()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == "stop_PlaybackService") {
+            stopForeground(STOP_FOREGROUND_DETACH)
+            stopSelf()
+        }
+        return super.onStartCommand(intent, flags, startId)
+    }
+
+    @OptIn(UnstableApi::class)
+    private fun setSessionActivity() {
+        val intent = Intent(
+            this,
+            MainActivity::class.java
+        )
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            intent,
+            PendingIntent.FLAG_MUTABLE
+        )
+        mediaSession?.setSessionActivity(pendingIntent)
     }
 
     override fun onDestroy() {
