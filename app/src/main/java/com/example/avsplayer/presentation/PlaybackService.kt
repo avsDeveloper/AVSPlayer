@@ -10,9 +10,7 @@ import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
 class PlaybackService() : MediaLibraryService() {
 
     private var mediaSession: MediaLibrarySession? = null
@@ -49,7 +47,7 @@ class PlaybackService() : MediaLibraryService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == "stop_PlaybackService") {
+        if (intent?.action == STOP_AVS_PLAYER_PLAYBACK) {
             stopForeground(STOP_FOREGROUND_DETACH)
             stopSelf()
         }
@@ -80,5 +78,15 @@ class PlaybackService() : MediaLibraryService() {
         super.onDestroy()
     }
 
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        stopForeground(STOP_FOREGROUND_DETACH)
+        stopSelf()
+    }
+
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? = mediaSession
+
+    companion object {
+        val STOP_AVS_PLAYER_PLAYBACK = "STOP_AVS_PLAYER_PLAYBACK"
+    }
 }

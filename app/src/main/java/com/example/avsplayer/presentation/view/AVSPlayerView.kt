@@ -1,10 +1,11 @@
 package com.example.avsplayer.presentation.view
 
-import android.health.connect.datatypes.units.Length
+import android.view.View
+import android.view.View.OnLongClickListener
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.Toast
-import android.widget.Toast.LENGTH_SHORT
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.media3.session.MediaController
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -12,11 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.PlayerView
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.ModalDrawerSheet
 import com.example.avsplayer.presentation.MainActivityViewModel
 
+@androidx.annotation.OptIn(UnstableApi::class) @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AVSPlayerView(
     player: MediaController?,
@@ -25,7 +26,14 @@ fun AVSPlayerView(
 ) {
     val context = LocalContext.current
 
-    ConstraintLayout {
+    ConstraintLayout (
+        modifier = Modifier.combinedClickable(
+            onClick = {},
+            onLongClick = {
+                viewModel.showBottomSheet()
+            }
+        )
+    ) {
         val (title, videoPlayer) = createRefs()
 
         if (showBottomSheet) {
@@ -36,8 +44,6 @@ fun AVSPlayerView(
         }
 
         DisposableEffect(
-
-
             AndroidView(
                 modifier = Modifier
                     .constrainAs(videoPlayer) {
@@ -45,10 +51,20 @@ fun AVSPlayerView(
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
                         bottom.linkTo(parent.bottom)
-                    },
+                    }
+                    .combinedClickable(
+                        onClick = {},
+                        onLongClick = {
+                            viewModel.showBottomSheet()
+                        },
+                        onDoubleClick = {
+                            viewModel.showBottomSheet()
+                        }
+                    ),
                 factory = {
-
-                    PlayerView(context).apply {
+                    PlayerView(
+                        context
+                    ).apply {
                         setPlayer(player)
                         layoutParams =
                             FrameLayout.LayoutParams(
@@ -57,6 +73,10 @@ fun AVSPlayerView(
                                 ViewGroup.LayoutParams
                                     .MATCH_PARENT
                             )
+                        videoSurfaceView?.setOnLongClickListener {
+                            viewModel.showBottomSheet()
+                            true
+                        }
                     }
                 }
             )
