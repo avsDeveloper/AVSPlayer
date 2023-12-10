@@ -17,11 +17,9 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -31,6 +29,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import com.example.avsplayer.R
 import com.example.avsplayer.presentation.PlaybackService.Companion.STOP_AVS_PLAYER_PLAYBACK
 import com.example.avsplayer.presentation.theme.AVSPlayerTheme
 import com.example.avsplayer.presentation.view.AVSPlayerView
@@ -39,6 +38,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.launch
 import java.io.File
+
 
 class MainActivity : ComponentActivity(), MediaController.Listener {
 
@@ -70,8 +70,8 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
         setContent {
             AVSPlayerTheme {
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Color.Black
+                    modifier = Modifier
+                        .fillMaxSize()
                 ) {
                     PlayerScreen()
                 }
@@ -120,9 +120,6 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
                 view.onApplyWindowInsets(windowInsets)
             }
         }
-
-
-
     }
 
     private fun stopPlayback() {
@@ -131,7 +128,6 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
         startService(stopIntent)
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun PlayerScreen() {
         val uiState = viewModel.uiState.collectAsStateWithLifecycle()
@@ -197,28 +193,52 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
 
     private fun createMediaItem() : MediaItem {
 
-        val ret = MediaMetadataRetriever()
-        ret.setDataSource(this,  uri)
-
-        // let mediaItem be the title for simplicity =)
-
-        val title = ret.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE) ?: uri?.let { it1 ->
-            it1.path?.let {
-                File(it).name
-            }
-        }
+        val retriever = MediaMetadataRetriever()
+        retriever.setDataSource(this,  uri)
 
         val mediaItem = MediaItem
             .Builder()
-            .setMediaId(uri.toString())
-            .setMediaMetadata(
-                MediaMetadata
-                    .Builder()
-                    .setTitle(title)
-                    .build()
-            )
-            .build()
-        return mediaItem
+
+        // custom artworkUri
+        val artworkUri = if (retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH) != null ||
+            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT) != null
+        ) {
+            Uri.parse("android.resource://$packageName/${R.drawable.icon_video}")
+        } else {
+            Uri.parse("android.resource://$packageName/${R.drawable.icon_audio}")
+        }
+
+
+        // it is safer to surrender with try-catch, as it is not critical data
+        try {
+            val title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST) ?:
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE) ?: uri?.let { it1 ->
+                    it1.path?.let {
+                        File(it).name
+                    }
+                }
+
+            mediaItem
+                .setMediaId(uri.toString())
+                .setMediaMetadata(
+                    MediaMetadata
+                        .Builder()
+                        .setTitle(title)
+                        .setArtist(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST))
+                        .setAlbumTitle(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM))
+                        .setArtworkUri(artworkUri)
+                        .build()
+                )
+                .setMimeType(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE))
+
+
+        }
+        catch (e : Exception) {  }
+        finally {
+            retriever.release()
+        }
+
+        return mediaItem.build()
     }
 
     override fun onStop() {
