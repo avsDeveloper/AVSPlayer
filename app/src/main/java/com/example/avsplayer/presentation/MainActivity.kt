@@ -211,19 +211,20 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
 
         // it is safer to surrender with try-catch, as it is not critical data
         try {
-            val title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST) ?:
+            viewModel.setTitleText(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST) ?:
                 retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE) ?: uri?.let { it1 ->
                     it1.path?.let {
                         File(it).name
                     }
                 }
+            )
 
             mediaItem
                 .setMediaId(uri.toString())
                 .setMediaMetadata(
                     MediaMetadata
                         .Builder()
-                        .setTitle(title)
+                        .setTitle(viewModel.titleText.value)
                         .setArtist(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST))
                         .setAlbumTitle(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM))
                         .setArtworkUri(artworkUri)

@@ -35,7 +35,8 @@ fun AVSPlayerBottomSheetView(
         onDismissRequest = { onDismiss() },
         sheetState = modalBottomSheetState,
         shape = RoundedCornerShape(10.dp),
-        dragHandle = null
+        dragHandle = null,
+        containerColor = Color.Black
     ) {
 
         Column (
@@ -64,7 +65,7 @@ fun AVSPlayerBottomSheetView(
                 }
                 .border(
                     1.dp,
-                    Color.Black,
+                    Color.White,
                     RoundedCornerShape(10.dp)
                 )
             ) {
@@ -78,6 +79,7 @@ fun AVSPlayerBottomSheetView(
                         .align(Alignment.CenterVertically)
                         .padding(start = 8.dp),
                     text = "Stop and choose another file",
+                    color =  Color.White
                 )
             }
 
@@ -91,7 +93,7 @@ fun AVSPlayerBottomSheetView(
                 }
                 .border(
                     1.dp,
-                    Color.Black,
+                    Color.White,
                     RoundedCornerShape(10.dp)
                 )
             ) {
@@ -104,7 +106,8 @@ fun AVSPlayerBottomSheetView(
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
                         .padding(start = 8.dp),
-                    text = "Stop and close player"
+                    text = "Stop and close player",
+                    color =  Color.White
                 )
             }
 

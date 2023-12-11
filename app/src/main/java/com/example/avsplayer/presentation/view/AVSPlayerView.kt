@@ -1,7 +1,6 @@
 package com.example.avsplayer.presentation.view
 
 import android.content.res.Configuration
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,11 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.PlayerView
 import androidx.media3.ui.PlayerView.ARTWORK_DISPLAY_MODE_FIT
@@ -37,6 +36,7 @@ fun AVSPlayerView(
 ) {
     val context = LocalContext.current
     val screenOrientation = LocalConfiguration.current.orientation
+    val titleText = viewModel.titleText.collectAsStateWithLifecycle()
 
     ConstraintLayout (
         modifier = Modifier
@@ -88,7 +88,7 @@ fun AVSPlayerView(
                             .fillMaxWidth()
                             .padding(top = 32.dp, bottom = 8.dp, start = 8.dp, end = 8.dp),
                             style = MaterialTheme.typography.titleLarge,
-                            text = player?.mediaMetadata?.title.toString(),
+                            text = titleText.value,
                             textAlign = TextAlign.Start
                         )
                 }

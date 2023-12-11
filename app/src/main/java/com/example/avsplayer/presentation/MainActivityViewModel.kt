@@ -9,10 +9,13 @@ class MainActivityViewModel: ViewModel() {
     private val _uiState = MutableStateFlow<UIState>(UIState.Initiated)
     val uiState = _uiState.asStateFlow()
 
-    private val _isBottomSheetShown = MutableStateFlow<Boolean>(false)
+    private val _titleText = MutableStateFlow("")
+    val titleText = _titleText.asStateFlow()
+
+    private val _isBottomSheetShown = MutableStateFlow(false)
     val isBottomSheetShown = _isBottomSheetShown.asStateFlow()
 
-    private val _isFinished = MutableStateFlow<Boolean>(false)
+    private val _isFinished = MutableStateFlow(false)
     val isFinished = _isFinished.asStateFlow()
 
     fun setInitialized() {
@@ -36,6 +39,10 @@ class MainActivityViewModel: ViewModel() {
 
     fun setFinished() {
         _isFinished.value = true
+    }
+
+    fun setTitleText(text: String?) {
+        _titleText.value = text ?: ""
     }
 
 }
