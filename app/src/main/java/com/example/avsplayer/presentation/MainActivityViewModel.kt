@@ -1,6 +1,7 @@
 package com.example.avsplayer.presentation
 
 import androidx.lifecycle.ViewModel
+import com.example.avsplayer.data.MediaListItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -17,6 +18,9 @@ class MainActivityViewModel: ViewModel() {
 
     private val _isFinished = MutableStateFlow(false)
     val isFinished = _isFinished.asStateFlow()
+
+    private val _mediaListItemList = MutableStateFlow<MutableList<MediaListItem>>(mutableListOf())
+    val mediaListItemList = _mediaListItemList.asStateFlow()
 
     fun setInitialized() {
         _uiState.value = UIState.Initiated
@@ -43,6 +47,18 @@ class MainActivityViewModel: ViewModel() {
 
     fun setCurrentItemNum(itemNum: Int) {
         _currentItemNum.value = itemNum
+    }
+
+    fun addMediaListItem(item: MediaListItem) {
+        _mediaListItemList.value.add(item)
+    }
+
+    fun clearMediaListItem() {
+        _mediaListItemList.value.clear()
+    }
+
+    fun addMediaListItems(items: List<MediaListItem>) {
+        _mediaListItemList.value.addAll(items)
     }
 
 }
