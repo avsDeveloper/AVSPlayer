@@ -39,6 +39,7 @@ import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -158,18 +159,19 @@ fun AVSPlayerView(
                         )
                     }
                     .pointerInput(Unit) {
-                                        detectDragGestures { change, dragAmount ->
-                                            change.consume()
-                                            offsetX = (offsetX + dragAmount.x).coerceIn(minOffset, maxOffset)
-                                            offsetY = (offsetY + dragAmount.y).coerceIn(minOffset, maxOffset)
-                                        }
+                        detectDragGestures { change, dragAmount ->
+                            change.consume()
+                            offsetX = (offsetX + dragAmount.x).coerceIn(minOffset, maxOffset)
+                            offsetY = (offsetY + dragAmount.y).coerceIn(minOffset, maxOffset)
+                        }
                     },
                 onClick = { viewModel.showBottomSheet() },
                 containerColor = colorResource(id = R.color.colorPrimaryDark),
                 contentColor = Color.White,
                 shape = CircleShape,
             ) {
-                Icon(Icons.Filled.Close, "Floating action button.")
+                Icon(Icons.Filled.Close,
+                    stringResource(R.string.floating_action_button_content_description))
 
             }
         }

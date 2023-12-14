@@ -3,7 +3,6 @@ package com.example.avsplayer.presentation.view
 import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.media.Image
 import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MarqueeAnimationMode
@@ -21,20 +20,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.avsplayer.presentation.MainActivityViewModel
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,14 +33,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.avsplayer.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -71,25 +57,26 @@ fun AVSListItemView(
 ) {
     val currentPosition = viewModel?.currentItemNum?.collectAsStateWithLifecycle()
 
-    Row (modifier = Modifier
-        .fillMaxWidth()
-        .background(
-            if (itemPos == currentPosition?.value) colorResource(id = R.color.colorPrimaryDark)
-            else colorResource(id = R.color.color_black))
-        .clickable {
-            onClickCall()
-        }
-        .padding(start = 0.dp, end = 8.dp)
-        .height(64.dp),
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                if (itemPos == currentPosition?.value) colorResource(id = R.color.colorPrimaryDark)
+                else colorResource(id = R.color.colorBlack)
+            )
+            .clickable {
+                onClickCall()
+            }
+            .padding(end = 8.dp)
+            .height(64.dp),
         verticalAlignment = Alignment.CenterVertically
-
     ) {
 
         AVSMediaItemImage(
             uri = uri
         )
 
-        Column (
+        Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
@@ -109,7 +96,7 @@ fun AVSListItemView(
             )
 
             Text(
-                text =  description,
+                text = description,
                 color = Color.LightGray,
                 maxLines = 1,
                 modifier = Modifier
@@ -130,7 +117,6 @@ fun AVSListItemView(
 
 @Composable
 fun AVSMediaItemImage(
-    modifier: Modifier = Modifier,
     uri: Uri?
 ) {
     val context = LocalContext.current
@@ -144,7 +130,7 @@ fun AVSMediaItemImage(
 
     if (imageBitmap != null) {
 
-        Box (modifier = Modifier.padding(12.dp)) {
+        Box(modifier = Modifier.padding(12.dp)) {
             Image(
                 bitmap = imageBitmap!!.asImageBitmap(),
                 contentDescription = null,
@@ -156,7 +142,10 @@ fun AVSMediaItemImage(
     }
 }
 
-private suspend fun loadBitmap(contentResolver: ContentResolver, uri: Uri?): Bitmap? {
+private suspend fun loadBitmap(
+    contentResolver: ContentResolver,
+    uri: Uri?
+): Bitmap? {
     if (uri == null) return null
 
     return withContext(Dispatchers.IO) {
@@ -169,20 +158,5 @@ private suspend fun loadBitmap(contentResolver: ContentResolver, uri: Uri?): Bit
             null
         }
     }
-}
-
-
-
-
-@Preview
-@Composable
-fun AVSListItemViewPreview() {
-    AVSListItemView(
-        title = "Album",
-        description = "the song that sings the song",
-        itemPos = 1,
-        uri = null,
-        onClickCall = {  }
-    )
 }
 

@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.avsplayer.R
 import com.example.avsplayer.presentation.MainActivityViewModel
@@ -78,7 +79,7 @@ fun AVSPlayerBottomSheetView(
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
                         .padding(start = 8.dp),
-                    text = "Stop and open file picker",
+                    text = stringResource(R.string.stop_and_open_file_picker),
                     color =  Color.White
                 )
             }
@@ -102,7 +103,7 @@ fun AVSPlayerBottomSheetView(
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
                         .padding(start = 8.dp),
-                    text = "Stop and close player",
+                    text = stringResource(R.string.stop_and_close_player),
                     color =  Color.White
                 )
             }

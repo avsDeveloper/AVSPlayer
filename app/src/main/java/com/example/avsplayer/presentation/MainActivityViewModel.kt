@@ -18,9 +18,6 @@ class MainActivityViewModel: ViewModel() {
     private val _isFinished = MutableStateFlow(false)
     val isFinished = _isFinished.asStateFlow()
 
-    private val _isCurrentItemVideo = MutableStateFlow(false)
-    val isCurrentItemVideo = _isCurrentItemVideo.asStateFlow()
-
     fun setInitialized() {
         _uiState.value = UIState.Initiated
     }
@@ -46,10 +43,6 @@ class MainActivityViewModel: ViewModel() {
 
     fun setCurrentItemNum(itemNum: Int) {
         _currentItemNum.value = itemNum
-    }
-
-    fun setCurrentItemVideo(isVideo: Boolean) {
-        _isCurrentItemVideo.value = isVideo
     }
 
 }

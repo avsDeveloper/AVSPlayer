@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">AVSPlayer</string>
+    <string name="stop_and_close_player">Stop and close player</string>
+    <string name="stop_and_open_file_picker">Stop and open file picker</string>
+    <string name="floating_action_button_content_description">Close options, Floating action button.</string>
+    <string name="video_file">Video file (%1$s)</string>
+    <string name="audio_file">Audio file (%1$s)</string>
 </resources>

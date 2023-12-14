@@ -159,7 +159,6 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
                 // show indicator
                 AVSProgressIndicatorView()
 
-
                 val sessionToken = SessionToken(
                     this,
                     ComponentName(this, PlaybackService::class.java)
@@ -242,9 +241,9 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
                 } else if (title != null) {
                     titleString.append(title.trim())
                 } else if (isVideo) {
-                    titleString.append("Video file ($mimetype)")
+                    titleString.append(getString(R.string.video_file, mimetype))
                 } else {
-                    titleString.append("Audio file ($mimetype)")
+                    titleString.append(getString(R.string.audio_file, mimetype))
                 }
 
                 //generate description text from file name
@@ -269,8 +268,4 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
         return mediaItemList
     }
 
-    override fun onStop() {
-        super.onStop()
-        // ToDo check what needs to be disposed here to prevent memleaks
-    }
 }
