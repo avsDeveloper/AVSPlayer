@@ -1,6 +1,7 @@
 package com.example.avsplayer.presentation.view
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.avsplayer.R
@@ -32,6 +35,7 @@ fun AVSPlayerBottomSheetView(
     )
 
     ModalBottomSheet(
+        modifier = Modifier.layoutId("bottomsheet"),
         onDismissRequest = { onDismiss() },
         sheetState = modalBottomSheetState,
         shape = RoundedCornerShape(10.dp),
@@ -63,11 +67,7 @@ fun AVSPlayerBottomSheetView(
                     onDismiss() // not sure it should be done like this ))
                     viewModel.setInitialized()
                 }
-                .border(
-                    1.dp,
-                    Color.White,
-                    RoundedCornerShape(10.dp)
-                )
+                .background(colorResource(id = R.color.colorPrimaryDark))
             ) {
                 Image (
                     painter = painterResource(id = R.drawable.icon_search),
@@ -78,7 +78,7 @@ fun AVSPlayerBottomSheetView(
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
                         .padding(start = 8.dp),
-                    text = "Stop and choose another file",
+                    text = "Stop and open file picker",
                     color =  Color.White
                 )
             }
@@ -91,11 +91,7 @@ fun AVSPlayerBottomSheetView(
                     onDismiss() // not sure it should be done like this ))
                     viewModel.setFinished()
                 }
-                .border(
-                    1.dp,
-                    Color.White,
-                    RoundedCornerShape(10.dp)
-                )
+                .background(colorResource(id = R.color.colorPrimaryDark))
             ) {
                 Image (
                     painter = painterResource(id = R.drawable.icon_stop_and_close),

@@ -27,6 +27,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
+import androidx.media3.common.Tracks
+import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.example.avsplayer.R
@@ -45,7 +47,7 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
     private val viewModel: MainActivityViewModel by viewModels()
     private lateinit var controllerFuture : ListenableFuture<MediaController>
     private lateinit var resultReceiver : ActivityResultLauncher<Intent>
-    private var uri: Uri? = null
+    private var uriList = mutableListOf<Uri>()
     private var fileName: String = "" // let it be empty even if it won't be retrieved
     lateinit var player: Player
 
@@ -88,10 +90,17 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
         resultReceiver = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) {
-            if (it.resultCode == Activity.RESULT_OK){
-                fileName = it.data?.toString()!!
-                uri = it.data?.data
+            if (it.resultCode == Activity.RESULT_OK) { // several items selected
                 viewModel.setSelected()
+                uriList.clear()
+                if (it?.data?.clipData != null) {
+                    for (i in 0 until it.data?.clipData?.itemCount!!) {
+                        it.data?.clipData?.getItemAt(i)?.uri?.let { uriList.add(it) }
+                    }
+                } else { // only one item selected
+                    fileName = it.data?.toString()!!
+                    it.data?.data?.let { uriList.add(it) }
+                }
             }
         }
     }
@@ -146,6 +155,11 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
 
             // create media session and show progress bar
             UIState.Selected -> {
+
+                // show indicator
+                AVSProgressIndicatorView()
+
+
                 val sessionToken = SessionToken(
                     this,
                     ComponentName(this, PlaybackService::class.java)
@@ -155,20 +169,21 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
                     .buildAsync()
                 controllerFuture.addListener(
                     {
+                        val items = createMediaItems(uriList)
+                        player = controllerFuture.get()
+                        player.setMediaItems(items)
+                        player.prepare()
+                        player.play()
+                        player.addListener(object : Player.Listener {
+                            override fun onTracksChanged(tracks: Tracks) {
+                                super.onTracksChanged(tracks)
+                                viewModel.setCurrentItemNum(player.currentMediaItemIndex)
+                            }
+                        })
                         viewModel.setReady()
-                        uri?.let {
-                            val mediaItem = createMediaItem()
-                            player = controllerFuture.get()
-                            player.setMediaItem(mediaItem)
-                            player.prepare()
-                            player.play()
-                        }
                     },
                     MoreExecutors.directExecutor()
                 )
-
-                // show indicator
-                AVSProgressIndicatorView()
             }
 
             // launch picker here =)
@@ -183,63 +198,75 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
     private fun openPicker() {
         val pickMediaIntent = Intent()
             .apply {
-                addCategory(Intent.CATEGORY_OPENABLE)
-                action = Intent.ACTION_OPEN_DOCUMENT
+                action = Intent.ACTION_GET_CONTENT
                 type = "*/*"
+                putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
                 putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("audio/*", "video/*"))
             }
         resultReceiver.launch(pickMediaIntent)
     }
 
-    private fun createMediaItem() : MediaItem {
+    private fun createMediaItems(uriList: List<Uri>) : List<MediaItem> {
 
         val retriever = MediaMetadataRetriever()
-        retriever.setDataSource(this,  uri)
+        val mediaItemList = mutableListOf<MediaItem>()
 
-        val mediaItem = MediaItem
-            .Builder()
+        uriList.forEach {uri ->
+            retriever.setDataSource(this,  uri)
 
-        // custom artworkUri
-        val artworkUri = if (retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH) != null ||
-            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT) != null
-        ) {
-            Uri.parse("android.resource://$packageName/${R.drawable.icon_video}")
-        } else {
-            Uri.parse("android.resource://$packageName/${R.drawable.icon_audio}")
-        }
+            val mediaItem = MediaItem
+                .Builder()
 
+            // it is safer to surrender with try-catch, as it is not critical data
+            try {
+                val mimetype = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE)
+                val isVideo = mimetype != null && mimetype.contains("video", ignoreCase = true)
 
-        // it is safer to surrender with try-catch, as it is not critical data
-        try {
-            viewModel.setTitleText(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST) ?:
-                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE) ?: uri?.let { it1 ->
-                    it1.path?.let {
-                        File(it).name
-                    }
+                // generate artworkUri
+                val artworkUri = if  (isVideo) {
+                    Uri.parse("android.resource://$packageName/${R.drawable.icon_video_list}")
+                } else {
+                    Uri.parse("android.resource://$packageName/${R.drawable.icon_audio_list}")
                 }
-            )
 
-            mediaItem
-                .setMediaId(uri.toString())
-                .setMediaMetadata(
-                    MediaMetadata
-                        .Builder()
-                        .setTitle(viewModel.titleText.value)
-                        .setArtist(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST))
-                        .setAlbumTitle(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM))
-                        .setArtworkUri(artworkUri)
-                        .build()
-                )
-                .setMimeType(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE))
+                //generate title text
+                val titleString = StringBuilder()
 
+                val artist = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
+                val title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
 
+                if (artist != null && title != null) {
+                    titleString.append("${artist.trim()} - ${title.trim()}")
+                } else if (artist != null) {
+                    titleString.append(artist.trim())
+                } else if (title != null) {
+                    titleString.append(title.trim())
+                } else if (isVideo) {
+                    titleString.append("Video file ($mimetype)")
+                } else {
+                    titleString.append("Audio file ($mimetype)")
+                }
+
+                //generate description text from file name
+                val description = uri.path?.let { File(it).name }
+
+                mediaItem
+                    .setMediaId(uri.toString())
+                    .setMediaMetadata(
+                        MediaMetadata
+                            .Builder()
+                            .setTitle(titleString)
+                            .setDescription(description)
+                            .setArtworkUri(artworkUri)
+                            .build()
+                    )
+                    .setMimeType(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE))
+            }
+            catch (e : Exception) {  }
+            mediaItemList.add(mediaItem.build())
         }
-        catch (e : Exception) {  }
-        finally {
-            retriever.release()
-        }
-
-        return mediaItem.build()
+        retriever.release()
+        return mediaItemList
     }
 
     override fun onStop() {

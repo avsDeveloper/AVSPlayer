@@ -9,14 +9,17 @@ class MainActivityViewModel: ViewModel() {
     private val _uiState = MutableStateFlow<UIState>(UIState.Initiated)
     val uiState = _uiState.asStateFlow()
 
-    private val _titleText = MutableStateFlow("")
-    val titleText = _titleText.asStateFlow()
+    private val _currentItemNum = MutableStateFlow(0)
+    val currentItemNum = _currentItemNum.asStateFlow()
 
     private val _isBottomSheetShown = MutableStateFlow(false)
     val isBottomSheetShown = _isBottomSheetShown.asStateFlow()
 
     private val _isFinished = MutableStateFlow(false)
     val isFinished = _isFinished.asStateFlow()
+
+    private val _isCurrentItemVideo = MutableStateFlow(false)
+    val isCurrentItemVideo = _isCurrentItemVideo.asStateFlow()
 
     fun setInitialized() {
         _uiState.value = UIState.Initiated
@@ -41,8 +44,12 @@ class MainActivityViewModel: ViewModel() {
         _isFinished.value = true
     }
 
-    fun setTitleText(text: String?) {
-        _titleText.value = text ?: ""
+    fun setCurrentItemNum(itemNum: Int) {
+        _currentItemNum.value = itemNum
+    }
+
+    fun setCurrentItemVideo(isVideo: Boolean) {
+        _isCurrentItemVideo.value = isVideo
     }
 
 }

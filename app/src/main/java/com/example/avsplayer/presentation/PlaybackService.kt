@@ -11,11 +11,10 @@ import androidx.media3.session.MediaSession
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 
-class PlaybackService() : MediaLibraryService() {
+class PlaybackService : MediaLibraryService() {
 
     private var mediaSession: MediaLibrarySession? = null
     private lateinit var player: ExoPlayer
-
 
     override fun onCreate() {
         super.onCreate()
