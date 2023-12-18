@@ -8,7 +8,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
@@ -30,19 +29,18 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.Tracks
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.example.avsplayer.R
 import com.example.avsplayer.data.MediaListItem
 import com.example.avsplayer.presentation.PlaybackService.Companion.STOP_AVS_PLAYER_PLAYBACK
 import com.example.avsplayer.presentation.theme.AVSPlayerTheme
+import com.example.avsplayer.presentation.view.AVSPlayerInfoView
 import com.example.avsplayer.presentation.view.AVSPlayerView
 import com.example.avsplayer.presentation.view.AVSProgressIndicatorView
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.launch
-import java.io.File
 
 
 class MainActivity : ComponentActivity(), MediaController.Listener {
@@ -50,7 +48,6 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
     private val viewModel: MainActivityViewModel by viewModels()
     private lateinit var controllerFuture : ListenableFuture<MediaController>
     private lateinit var resultReceiver : ActivityResultLauncher<Intent>
-//    private var uriList = mutableListOf<Uri>()
     lateinit var player: Player
 
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
@@ -70,7 +67,6 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
             }
         }
 
-        // here we set Compose UI. Trying to figure out how it works ))
         setContent {
             AVSPlayerTheme {
                 Surface(
@@ -146,7 +142,6 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
         }
     }
 
-
     @Suppress("DEPRECATION")
     private fun setFullScreen() {
         actionBar?.hide()
@@ -185,7 +180,12 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
 
         when (uiState.value) {
 
-            // show player
+            // show initial screen or when the user opens it
+            UIState.InfoScreen -> {
+                AVSPlayerInfoView(viewModel)
+            }
+
+            // showUIState player
             UIState.Ready -> {
                 AVSPlayerView(
                     controllerFuture.get(),
@@ -246,8 +246,6 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
         resultReceiver.launch(pickMediaIntent)
     }
 
-
-
     private fun createMediaItems(uriList: List<MediaListItem>) : List<MediaItem> {
 
         val retriever = MediaMetadataRetriever()
@@ -272,7 +270,6 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
                 } else {
                     getString(R.string.audio_file, item.mimeType)
                 }
-
 
                 mediaItem
                     .setMediaId(item.uri.toString())

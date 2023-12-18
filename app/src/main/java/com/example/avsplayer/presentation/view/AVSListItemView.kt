@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,8 +62,9 @@ fun AVSListItemView(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                if (itemPos == currentPosition?.value) colorResource(id = R.color.colorPrimaryDark)
-                else colorResource(id = R.color.colorBlack)
+                color =  if (itemPos == currentPosition?.value) colorResource(id = R.color.colorPrimaryDark)
+                else colorResource(id = R.color.colorBlack),
+                shape = RoundedCornerShape(8.dp)
             )
             .clickable {
                 onClickCall()
@@ -90,14 +92,12 @@ fun AVSListItemView(
                         delayMillis = 0,
                     ),
                 text = title,
-                color = Color.LightGray,
                 maxLines = 1,
                 style = MaterialTheme.typography.labelLarge
             )
 
             Text(
                 text = description,
-                color = Color.LightGray,
                 maxLines = 1,
                 modifier = Modifier
                     .basicMarquee(
@@ -107,10 +107,7 @@ fun AVSListItemView(
                     ),
                 style = MaterialTheme.typography.bodySmall
             )
-
         }
-
-
     }
 }
 

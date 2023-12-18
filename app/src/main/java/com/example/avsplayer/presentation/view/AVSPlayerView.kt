@@ -1,28 +1,18 @@
 package com.example.avsplayer.presentation.view
 
-import android.content.res.Configuration
-import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.DraggableState
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTransformGestures
-import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeFloatingActionButton
 import androidx.media3.session.MediaController
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -32,10 +22,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -49,7 +37,6 @@ import androidx.media3.ui.PlayerView
 import androidx.media3.ui.PlayerView.ARTWORK_DISPLAY_MODE_FIT
 import com.example.avsplayer.R
 import com.example.avsplayer.presentation.MainActivityViewModel
-import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -60,7 +47,6 @@ fun AVSPlayerView(
     viewModel: MainActivityViewModel
 ) {
     val context = LocalContext.current
-    val screenOrientation = LocalConfiguration.current.orientation
 
     ConstraintLayout (
         modifier = Modifier
@@ -70,16 +56,14 @@ fun AVSPlayerView(
         if (showBottomSheet) {
             AVSPlayerBottomSheetView(
                 onDismiss = { viewModel.hideBottomSheet() },
-                viewModel = viewModel
+                viewModel = viewModel,
+                player = player
             )
         }
 
         Column () {
 
-            val modifier = if (screenOrientation == Configuration.ORIENTATION_PORTRAIT) Modifier
-                .fillMaxWidth(1f)
-                .aspectRatio(16f / 9f)
-            else Modifier.fillMaxWidth(1f)
+            val modifier =  Modifier.fillMaxWidth(1f)
 
             DisposableEffect(
                     AndroidView(
@@ -104,32 +88,6 @@ fun AVSPlayerView(
                     player?.release()
                 }
             }
-
-            // Media data views
-            if (screenOrientation == Configuration.ORIENTATION_PORTRAIT) {
-                Column  {
-                    LazyColumn(
-                        modifier = Modifier
-                    ) {
-
-                        player?.mediaItemCount?.let {
-                            for (i in 0 until player.mediaItemCount) {
-                                item {
-                                    AVSListItemView(
-                                        viewModel = viewModel,
-                                        title = player.getMediaItemAt(i).mediaMetadata.title.toString(),
-                                        description = player.getMediaItemAt(i).mediaMetadata.description.toString(),
-                                        uri = player.getMediaItemAt(i).mediaMetadata.artworkUri,
-                                        itemPos = i
-                                    ) {
-                                        if (i != player.currentMediaItemIndex) player.seekTo(i, 0)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
 
 
@@ -143,11 +101,11 @@ fun AVSPlayerView(
 
             val screenDensity = LocalConfiguration.current.densityDpi / 160f
 
-            val minOffset = LocalConfiguration.current.screenHeightDp.coerceAtMost(
+            val minOffset = (LocalConfiguration.current.screenHeightDp.coerceAtMost(
                 LocalConfiguration.current.screenWidthDp
-            ) * screenDensity * -1
+            ) - 56) * screenDensity * -1
 
-            val maxOffset = 90 * screenDensity
+            val maxOffset = 56 * screenDensity
 
             FloatingActionButton(
                 modifier = Modifier
@@ -170,7 +128,7 @@ fun AVSPlayerView(
                 contentColor = Color.White,
                 shape = CircleShape,
             ) {
-                Icon(Icons.Filled.Close,
+                Icon(Icons.Filled.Menu,
                     stringResource(R.string.floating_action_button_content_description))
 
             }
