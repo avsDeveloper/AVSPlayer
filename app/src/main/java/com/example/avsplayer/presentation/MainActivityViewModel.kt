@@ -1,14 +1,22 @@
 package com.example.avsplayer.presentation
 
-import androidx.lifecycle.AndroidViewModel
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import com.example.avsplayer.data.DataStoreRepository
 import com.example.avsplayer.data.MediaListItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-class MainActivityViewModel: ViewModel() {
+import kotlinx.coroutines.launch
+
+class MainActivityViewModel(
+    private val repository: DataStoreRepository
+): ViewModel() {
 
     private val _uiState = MutableStateFlow<UIState>(UIState.InfoScreen)
-    val uiState = _uiState.asStateFlow()
+    val uiState = _uiState
 
     private val _currentItemNum = MutableStateFlow(0)
     val currentItemNum = _currentItemNum.asStateFlow()
@@ -21,6 +29,20 @@ class MainActivityViewModel: ViewModel() {
 
     private val _mediaListItemList = MutableStateFlow<MutableList<MediaListItem>>(mutableListOf())
     val mediaListItemList = _mediaListItemList.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            repository.isShouldOpenFirstScreenFlow.collect { shouldOpen ->
+                _uiState.value = if (shouldOpen) UIState.InfoScreen else UIState.Initiated
+            }
+        }
+    }
+
+    fun setFirstScreenShown(isShown: Boolean) {
+        viewModelScope.launch {
+            repository.updateFirstScreenPref(isShown)
+        }
+    }
 
     fun setInfoScreen() {
         _uiState.value = UIState.InfoScreen
@@ -79,4 +101,18 @@ sealed class UIState {
 
     // Media file ready, show Player
     object Ready: UIState()
+}
+
+
+class MainActivityViewModelFactory(private val repository: DataStoreRepository)
+    : ViewModelProvider.Factory {
+
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(MainActivityViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return MainActivityViewModel(repository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+
 }

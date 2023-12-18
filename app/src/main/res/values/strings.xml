@@ -5,4 +5,7 @@
     <string name="floating_action_button_content_description">Close options, Floating action button.</string>
     <string name="video_file">Video file (%1$s)</string>
     <string name="audio_file">Audio file (%1$s)</string>
+    <string name="info_title">Welcome to AVSPlayer!</string>
+    <string name="info_text">AVSPlayer is your go-to app for playing local video and audio files on your Android device. It was designed to be as simple as possible, making it easy for you to enjoy your favorite content hassle-free.</string>
+    <string name="info_only_once_text">You will only see this screen after you have this app installed.</string>
 </resources>

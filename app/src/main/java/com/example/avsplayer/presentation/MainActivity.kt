@@ -2,6 +2,7 @@ package com.example.avsplayer.presentation
 
 import android.app.Activity
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -23,6 +24,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.datastore.preferences.SharedPreferencesMigration
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
@@ -32,6 +36,7 @@ import androidx.media3.common.Tracks
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.example.avsplayer.R
+import com.example.avsplayer.data.DataStoreRepository
 import com.example.avsplayer.data.MediaListItem
 import com.example.avsplayer.presentation.PlaybackService.Companion.STOP_AVS_PLAYER_PLAYBACK
 import com.example.avsplayer.presentation.theme.AVSPlayerTheme
@@ -45,7 +50,18 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity(), MediaController.Listener {
 
-    private val viewModel: MainActivityViewModel by viewModels()
+    private val Context.dataStore by preferencesDataStore(
+        name = "AVS_datastore"
+    )
+
+    private val repository: DataStoreRepository by lazy {
+        DataStoreRepository(dataStore)
+    }
+
+    private val viewModel: MainActivityViewModel by viewModels {
+        MainActivityViewModelFactory(repository)
+    }
+
     private lateinit var controllerFuture : ListenableFuture<MediaController>
     private lateinit var resultReceiver : ActivityResultLauncher<Intent>
     lateinit var player: Player
