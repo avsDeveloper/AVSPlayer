@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -31,7 +32,6 @@ fun AVSPlayerInfoView(
 ) {
     ConstraintLayout(
         modifier = Modifier
-            .background(colorResource(id = R.color.colorBlack))
             .fillMaxSize(),
     ) {
         Column {
@@ -41,7 +41,7 @@ fun AVSPlayerInfoView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
-                color = colorResource(id = R.color.colorWhite),
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleLarge
             )
@@ -49,57 +49,88 @@ fun AVSPlayerInfoView(
             Text(
                 text = stringResource(R.string.info_text),
                 modifier = Modifier
-                    .weight(1f)
                     .fillMaxWidth()
                     .padding(8.dp),
-                color = colorResource(id = R.color.colorWhite),
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Left,
                 style = MaterialTheme.typography.bodyLarge
             )
 
             Text(
-                text = stringResource(R.string.info_only_once_text),
+                text = stringResource(R.string.info_text2),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
-                color = colorResource(id = R.color.colorWhite),
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Left,
                 style = MaterialTheme.typography.bodyLarge
             )
 
+            Text(
+                text = stringResource(R.string.info_text3),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Left,
+                style = MaterialTheme.typography.bodyLarge
+            )
+
+            Text(
+                text = stringResource(R.string.info_text4),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .weight(1f),
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Left,
+                style = MaterialTheme.typography.bodyLarge
+            )
+
+
+            Text(
+                text = stringResource(R.string.info_text5),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Left,
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+
+
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp, bottom = 8.dp, end = 4.dp),
+                    .padding(start = 4.dp, top = 8.dp, bottom = 64.dp, end = 4.dp),
                 onClick = {
                     viewModel?.setFirstScreenShown(false)
                     viewModel?.setInitialized()
                 },
+                shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                    contentColor = colorResource(id = R.color.colorPrimaryDark),
-                    containerColor = colorResource(id = R.color.colorPrimaryDark)
-                ),
-                shape = RoundedCornerShape(8.dp)
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    containerColor = MaterialTheme.colorScheme.onSecondary
+                )
+
             ) {
 
                 Icon(
-                    imageVector = Icons.Default.Search,
+                    imageVector = Icons.Default.Check,
                     contentDescription = null,
-                    modifier = Modifier.padding(8.dp),
-                    tint = Color.White
+                    modifier = Modifier.padding(8.dp)
                 )
                 Text(
-                    text = "Select files",
-                    textAlign = TextAlign.Center,
-                    color = Color.White
+                    text = "Close and start player",
+                    textAlign = TextAlign.Center
                 )
             }
-
         }
     }
 }
 
-@Preview (showSystemUi = true)
+@Preview (showSystemUi = true, showBackground = true)
 @Composable
 fun AVSPlayerInfoViewPreview() {
     AVSPlayerInfoView()

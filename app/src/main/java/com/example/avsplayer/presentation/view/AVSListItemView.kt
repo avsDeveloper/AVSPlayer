@@ -56,21 +56,32 @@ fun AVSListItemView(
     uri: Uri?,
     onClickCall: () -> Unit
 ) {
+
     val currentPosition = viewModel?.currentItemNum?.collectAsStateWithLifecycle()
 
-    Row(
-        modifier = Modifier
+    val modifier = if (itemPos == currentPosition?.value) {
+        Modifier
             .fillMaxWidth()
+            .clickable {
+                onClickCall()
+            }
+            .height(64.dp)
             .background(
-                color =  if (itemPos == currentPosition?.value) colorResource(id = R.color.colorPrimaryDark)
-                else colorResource(id = R.color.colorBlack),
+                color =  MaterialTheme.colorScheme.onSecondary,
                 shape = RoundedCornerShape(8.dp)
             )
+    } else {
+        Modifier
+            .fillMaxWidth()
             .clickable {
                 onClickCall()
             }
             .padding(end = 8.dp)
-            .height(64.dp),
+            .height(64.dp)
+    }
+
+    Row(
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
 
@@ -93,7 +104,8 @@ fun AVSListItemView(
                     ),
                 text = title,
                 maxLines = 1,
-                style = MaterialTheme.typography.labelLarge
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Text(
@@ -105,7 +117,8 @@ fun AVSListItemView(
                         else MarqueeAnimationMode.WhileFocused,
                         delayMillis = 0,
                     ),
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }

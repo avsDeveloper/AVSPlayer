@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.media3.session.MediaController
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -50,7 +51,7 @@ fun AVSPlayerView(
 
     ConstraintLayout (
         modifier = Modifier
-            .background(Color.Black)
+
     ) {
 
         if (showBottomSheet) {
@@ -103,13 +104,14 @@ fun AVSPlayerView(
 
             val minOffset = (LocalConfiguration.current.screenHeightDp.coerceAtMost(
                 LocalConfiguration.current.screenWidthDp
-            ) - 56) * screenDensity * -1
+            ) - 130) * screenDensity * -1
 
-            val maxOffset = 56 * screenDensity
+            val maxOffset = 130 * screenDensity
 
             FloatingActionButton(
                 modifier = Modifier
                     .align(alignment = Alignment.BottomEnd)
+                    .padding(bottom = 56.dp, end = 56.dp)
                     .offset {
                         IntOffset(
                             offsetX.roundToInt(),
@@ -124,9 +126,8 @@ fun AVSPlayerView(
                         }
                     },
                 onClick = { viewModel.showBottomSheet() },
-                containerColor = colorResource(id = R.color.colorPrimaryDark),
-                contentColor = Color.White,
                 shape = CircleShape,
+                containerColor = MaterialTheme.colorScheme.onSecondary
             ) {
                 Icon(Icons.Filled.Menu,
                     stringResource(R.string.floating_action_button_content_description))

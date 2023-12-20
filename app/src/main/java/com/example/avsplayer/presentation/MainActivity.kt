@@ -24,9 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.datastore.preferences.SharedPreferencesMigration
 import androidx.datastore.preferences.preferencesDataStore
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
@@ -48,11 +46,11 @@ import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.launch
 
 
-class MainActivity : ComponentActivity(), MediaController.Listener {
+private val Context.dataStore by preferencesDataStore(
+    name = "AVS_datastore"
+)
 
-    private val Context.dataStore by preferencesDataStore(
-        name = "AVS_datastore"
-    )
+class MainActivity : ComponentActivity(), MediaController.Listener {
 
     private val repository: DataStoreRepository by lazy {
         DataStoreRepository(dataStore)
@@ -67,7 +65,9 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
     lateinit var player: Player
 
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
-        override fun handleOnBackPressed() { viewModel.showBottomSheet() }
+        override fun handleOnBackPressed() {
+            viewModel.showBottomSheet()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -104,23 +104,29 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
         resultReceiver = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) {
-            if (it.resultCode == Activity.RESULT_OK) { // several items selected
-                viewModel.setSelected()
-                viewModel.clearMediaListItem()
 
-                if (it?.data?.clipData != null) {
-                    for (i in 0 until it.data?.clipData?.itemCount!!) {
-                        it.data?.clipData?.getItemAt(i)?.uri?.let {
+            when(it.resultCode) {
+                Activity.RESULT_OK -> {
+                    viewModel.setSelected()
+                    viewModel.clearMediaListItem()
+
+                    if (it?.data?.clipData != null) {
+                        for (i in 0 until it.data?.clipData?.itemCount!!) {
+                            it.data?.clipData?.getItemAt(i)?.uri?.let {
+                                generateMediaListData(it)
+                            }
+                        }
+                    } else { // only one item selected
+                        it.data?.data?.let {
                             generateMediaListData(it)
                         }
                     }
-                } else { // only one item selected
-                    it.data?.data?.let {
-                        generateMediaListData(it)
-
-                    }
+                }
+                else -> {
+                    viewModel.setFinished()
                 }
             }
+
         }
     }
 
@@ -276,9 +282,9 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
                 val isVideo = item.mimeType?.contains("video", ignoreCase = true)
 
                 val artworkUri = if  (isVideo == true) {
-                    Uri.parse("android.resource://$packageName/${R.drawable.icon_video_list}")
+                    Uri.parse("android.resource://$packageName/${R.drawable.icon_video_list_trans}")
                 } else {
-                    Uri.parse("android.resource://$packageName/${R.drawable.icon_audio_list}")
+                    Uri.parse("android.resource://$packageName/${R.drawable.icon_audio_list_transp}")
                 }
 
                 val descriptionText = if (isVideo == true) {
