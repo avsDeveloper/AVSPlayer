@@ -127,7 +127,7 @@ fun AVSPlayerView(
                     },
                 onClick = { viewModel.showBottomSheet() },
                 shape = CircleShape,
-                containerColor = MaterialTheme.colorScheme.onSecondary
+                containerColor = MaterialTheme.colorScheme.primary
             ) {
                 Icon(Icons.Filled.Menu,
                     stringResource(R.string.floating_action_button_content_description))

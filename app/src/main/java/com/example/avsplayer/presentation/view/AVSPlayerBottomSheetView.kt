@@ -136,7 +136,7 @@ fun AVSPlayerBottomSheetView(
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(
                             contentColor = MaterialTheme.colorScheme.onSurface,
-                            containerColor = MaterialTheme.colorScheme.onSecondary
+                            containerColor = MaterialTheme.colorScheme.primary
                         )
                     ) {
 
@@ -162,7 +162,7 @@ fun AVSPlayerBottomSheetView(
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(
                             contentColor = MaterialTheme.colorScheme.onSurface,
-                            containerColor = MaterialTheme.colorScheme.onSecondary
+                            containerColor = MaterialTheme.colorScheme.primary
                         )
 
                     ) {

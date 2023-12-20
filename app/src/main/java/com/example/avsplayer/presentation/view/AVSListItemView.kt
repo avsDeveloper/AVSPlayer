@@ -67,7 +67,7 @@ fun AVSListItemView(
             }
             .height(64.dp)
             .background(
-                color =  MaterialTheme.colorScheme.onSecondary,
+                color =  MaterialTheme.colorScheme.primary,
                 shape = RoundedCornerShape(8.dp)
             )
     } else {
