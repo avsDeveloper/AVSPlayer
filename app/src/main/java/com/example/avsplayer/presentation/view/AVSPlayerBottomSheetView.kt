@@ -118,7 +118,6 @@ fun AVSPlayerBottomSheetView(
                                     viewModel = viewModel,
                                     title = player.getMediaItemAt(i).mediaMetadata.title.toString(),
                                     description = player.getMediaItemAt(i).mediaMetadata.description.toString(),
-                                    uri = player.getMediaItemAt(i).mediaMetadata.artworkUri,
                                     itemPos = i
                                 ) {
                                     if (i != player.currentMediaItemIndex) player.seekTo(i, 0)

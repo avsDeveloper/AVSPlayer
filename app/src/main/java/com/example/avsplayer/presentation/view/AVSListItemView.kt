@@ -35,7 +35,6 @@ fun AVSListItemView(
     title: String,
     description: String,
     itemPos: Int,
-    uri: Uri?,
     onClickCall: () -> Unit
 ) {
 
@@ -77,7 +76,8 @@ fun AVSListItemView(
     ) {
 
         AVSMediaItemImage(
-            uri = uri
+            if (description.toString().contains("video", true)) MediaType.VIDEO
+            else MediaType.AUDIO
         )
 
         Column(
@@ -117,22 +117,4 @@ fun AVSListItemView(
     }
 }
 
-
-@Preview (name = "Light mode", showSystemUi = false, showBackground = true)
-@Preview (name = "Dark mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showSystemUi = false, showBackground = true)
-@Composable
-fun AVSListItemViewPreview() {
-    val packageName = LocalContext.current.packageName
-    val uri = Uri.parse("android.resource://$packageName/${R.drawable.audio_notification}")
-    AVSPlayerTheme {
-        AVSListItemView(
-            viewModel = null,
-            title = "Song",
-            description = "Song Song Song",
-            itemPos = 1,
-            uri = uri,
-            onClickCall = {}
-        )
-    }
-}
 

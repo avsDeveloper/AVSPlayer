@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
@@ -23,7 +22,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.core.content.FileProvider
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.datastore.preferences.preferencesDataStore
@@ -46,10 +44,6 @@ import com.example.avsplayer.presentation.view.AVSProgressIndicatorView
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-
 
 private val Context.dataStore by preferencesDataStore(
     name = "AVS_datastore"
@@ -290,7 +284,7 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
                 val isVideo = item.mimeType?.contains("video", ignoreCase = true)
 
                 val artworkUri = if  (isVideo == true) {
-                    Uri.parse("android.resource://$packageName/${R.drawable.icon_video_list_trans}")
+                    Uri.parse("android.resource://$packageName/${R.drawable.video_notification}")
                 } else {
                     Uri.parse("android.resource://$packageName/${R.drawable.audio_notification}")
                 }
@@ -318,5 +312,4 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
         retriever.release()
         return mediaItemList
     }
-
 }
