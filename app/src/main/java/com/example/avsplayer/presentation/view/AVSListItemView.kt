@@ -72,7 +72,7 @@ fun AVSListItemView(
     }
 
     Row(
-        modifier = surfaceModifier,
+        modifier = surfaceModifier.padding(start = 8.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
 
@@ -81,7 +81,9 @@ fun AVSListItemView(
         )
 
         Column(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 8.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
 

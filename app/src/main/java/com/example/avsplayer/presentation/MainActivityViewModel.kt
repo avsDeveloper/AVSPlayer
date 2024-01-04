@@ -42,10 +42,6 @@ class MainActivityViewModel(
         }
     }
 
-    fun setInfoScreen() {
-        _uiState.value = UIState.InfoScreen
-    }
-
     fun setInitialized() {
         _uiState.value = UIState.Initiated
     }
@@ -79,10 +75,6 @@ class MainActivityViewModel(
 
     fun clearMediaListItem() {
         _mediaListItemList.value.clear()
-    }
-
-    fun addMediaListItems(items: List<MediaListItem>) {
-        _mediaListItemList.value.addAll(items)
     }
 
 }
