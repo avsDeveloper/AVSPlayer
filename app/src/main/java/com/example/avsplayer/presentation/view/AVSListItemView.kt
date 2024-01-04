@@ -123,7 +123,7 @@ fun AVSListItemView(
 @Composable
 fun AVSListItemViewPreview() {
     val packageName = LocalContext.current.packageName
-    val uri = Uri.parse("android.resource://$packageName/${R.drawable.video_notification}")
+    val uri = Uri.parse("android.resource://$packageName/${R.drawable.audio_notification}")
     AVSPlayerTheme {
         AVSListItemView(
             viewModel = null,

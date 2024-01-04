@@ -73,19 +73,3 @@ private suspend fun loadBitmap(
         }
     }
 }
-
-
-@Preview(
-    name = "Dark mode",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    showSystemUi = true,
-    showBackground = true
-)
-@Composable
-fun AVSMediaItemImagePreview() {
-    val packageName = LocalContext.current.packageName
-    val uri = Uri.parse("android.resource://$packageName/${R.drawable.video_notification}")
-    AVSPlayerTheme {
-        AVSMediaItemImage(uri)
-    }
-}
