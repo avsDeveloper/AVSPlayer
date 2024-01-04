@@ -13,7 +13,7 @@ class MainActivityViewModel(
     private val repository: DataStoreRepository
 ): ViewModel() {
 
-    private val _uiState = MutableStateFlow<UIState>(UIState.InfoScreen)
+    private val _uiState = MutableStateFlow<UIState>(UIState.JustCreated)
     val uiState = _uiState
 
     private val _currentItemNum = MutableStateFlow(0)
@@ -89,15 +89,20 @@ class MainActivityViewModel(
 
 sealed class UIState {
 
+    // show progress bar until we check if the app is opened first time,
+    // set automatically only when the app is just started
+    object JustCreated: UIState()
+
+    // the app is opened first time, so PlayerInfoView screen needs to be shown
     object InfoScreen: UIState()
 
-    // Initial state
+    // everything ready, open media picker
     object Initiated: UIState()
 
-    // Media file selected, show Progress bar
+    // Media files selected, show Progress bar until files are opened
     object Selected: UIState()
 
-    // Media file ready, show Player
+    // Media files ready, show and run player
     object Ready: UIState()
 }
 

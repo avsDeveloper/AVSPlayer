@@ -1,6 +1,5 @@
 package com.example.avsplayer.presentation.view
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,11 +22,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -49,6 +46,8 @@ fun AVSPlayerView(
 ) {
     val context = LocalContext.current
 
+    val playerView = remember { PlayerView(context) }
+
     ConstraintLayout (
         modifier = Modifier
 
@@ -62,33 +61,29 @@ fun AVSPlayerView(
             )
         }
 
-        Column () {
+        Column {
 
             val modifier =  Modifier.fillMaxWidth(1f)
 
-            DisposableEffect(
-                    AndroidView(
-                        modifier = modifier
-                            .padding(bottom = 16.dp),
-                        factory = {
-                            PlayerView(
-                                context,
-                            ).apply {
-                                setPlayer(player)
-                                defaultArtwork = context.getDrawable(R.drawable.video_off_outline)
-                                artworkDisplayMode = ARTWORK_DISPLAY_MODE_FIT
-                                videoSurfaceView?.setOnLongClickListener {
-                                    viewModel.showBottomSheet()
-                                    true
-                                }
-                            }
-                        }
-                    )
-            ) {
-                onDispose {
-                    player?.release()
+            DisposableEffect(player) {
+                    playerView.setPlayer(player)
+                    playerView.defaultArtwork = context.getDrawable(R.drawable.video_off_outline)
+                    playerView.artworkDisplayMode = ARTWORK_DISPLAY_MODE_FIT
+                    playerView.videoSurfaceView?.setOnLongClickListener {
+                        // Handle long click
+                        viewModel.showBottomSheet()
+                        true
+                    }
+
+                    onDispose {
+                        player?.release()
+                    }
                 }
-            }
+
+            AndroidView(
+                modifier = modifier.padding(bottom = 16.dp),
+                factory = { playerView }
+            )
         }
 
 

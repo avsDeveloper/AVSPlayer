@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
@@ -44,6 +45,7 @@ import com.example.avsplayer.presentation.view.AVSProgressIndicatorView
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
 
 
 private val Context.dataStore by preferencesDataStore(
@@ -202,24 +204,19 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
 
         when (uiState.value) {
 
-            // show initial screen or when the user opens it
+            // show initial screen or when the user opens it (currently the user cannot open it)
             UIState.InfoScreen -> {
                 AVSPlayerInfoView(viewModel)
             }
 
-            // showUIState player
-            UIState.Ready -> {
-                AVSPlayerView(
-                    controllerFuture.get(),
-                    isBottomSheetShown.value,
-                    viewModel
-                )
+            // everything ready, open media picker
+            UIState.Initiated -> {
+                stopPlayback()
+                openPicker()
             }
 
             // create media session and show progress bar
             UIState.Selected -> {
-
-                // show indicator
                 AVSProgressIndicatorView()
 
                 val sessionToken = SessionToken(
@@ -248,10 +245,18 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
                 )
             }
 
-            // launch picker here =)
+            // show and run player
+            UIState.Ready -> {
+                AVSPlayerView(
+                    controllerFuture.get(),
+                    isBottomSheetShown.value,
+                    viewModel
+                )
+            }
+
+            // JustCreated state, initial state, show progress bar
             else -> {
-                stopPlayback()
-                openPicker()
+                AVSProgressIndicatorView()
             }
         }
     }
@@ -282,9 +287,19 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
                 val isVideo = item.mimeType?.contains("video", ignoreCase = true)
 
                 val artworkUri = if  (isVideo == true) {
-                    Uri.parse("android.resource://$packageName/${R.drawable.icon_video_list_trans}")
+                    val artBitmap = retriever.getFrameAtTime(0)
+                    val bytes = ByteArrayOutputStream()
+                    artBitmap?.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
+                    val path = MediaStore.Images.Media.insertImage(
+                        this.contentResolver,
+                        artBitmap,
+                        "Title",
+                        null
+                    )
+                    Uri.parse(path)
+//                    Uri.parse("android.resource://$packageName/${R.drawable.icon_video_list_trans}")
                 } else {
-                    Uri.parse("android.resource://$packageName/${R.drawable.icon_audio_list_transp}")
+                    Uri.parse("android.resource://$packageName/${R.drawable.audio_notification}")
                 }
 
                 val descriptionText = if (isVideo == true) {

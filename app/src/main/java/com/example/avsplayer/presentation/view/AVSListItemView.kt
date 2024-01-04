@@ -1,8 +1,6 @@
 package com.example.avsplayer.presentation.view
 
-import android.content.ContentResolver
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.content.res.Configuration
 import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MarqueeAnimationMode
@@ -19,32 +17,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.avsplayer.presentation.MainActivityViewModel
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.avsplayer.R
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.FileNotFoundException
-import java.io.IOException
-import java.io.InputStream
+import com.example.avsplayer.presentation.theme.AVSPlayerTheme
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -59,7 +41,7 @@ fun AVSListItemView(
 
     val currentPosition = viewModel?.currentItemNum?.collectAsStateWithLifecycle()
 
-    val modifier = if (itemPos == currentPosition?.value) {
+    val surfaceModifier = if (itemPos == currentPosition?.value) {
         Modifier
             .fillMaxWidth()
             .clickable {
@@ -67,7 +49,7 @@ fun AVSListItemView(
             }
             .height(64.dp)
             .background(
-                color =  MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(8.dp)
             )
     } else {
@@ -76,12 +58,21 @@ fun AVSListItemView(
             .clickable {
                 onClickCall()
             }
-            .padding(end = 8.dp)
             .height(64.dp)
+            .background(
+                color = Color.Transparent,
+                shape = RoundedCornerShape(8.dp)
+            )
+    }
+
+    val textColor = if (itemPos == currentPosition?.value) {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    } else {
+        MaterialTheme.colorScheme.onSurface
     }
 
     Row(
-        modifier = modifier,
+        modifier = surfaceModifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
 
@@ -105,7 +96,7 @@ fun AVSListItemView(
                 text = title,
                 maxLines = 1,
                 style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurface
+                color = textColor,
             )
 
             Text(
@@ -118,55 +109,28 @@ fun AVSListItemView(
                         delayMillis = 0,
                     ),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface
+                color = textColor
             )
         }
     }
 }
 
 
+@Preview (name = "Light mode", showSystemUi = false, showBackground = true)
+@Preview (name = "Dark mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showSystemUi = false, showBackground = true)
 @Composable
-fun AVSMediaItemImage(
-    uri: Uri?
-) {
-    val context = LocalContext.current
-    var imageBitmap by remember { mutableStateOf<Bitmap?>(null) }
-
-    LaunchedEffect(uri) {
-        launch {
-            imageBitmap = loadBitmap(context.contentResolver, uri)
-        }
-    }
-
-    if (imageBitmap != null) {
-
-        Box(modifier = Modifier.padding(12.dp)) {
-            Image(
-                bitmap = imageBitmap!!.asImageBitmap(),
-                contentDescription = null,
-                contentScale = ContentScale.Inside,
-                modifier = Modifier
-                    .clip(CircleShape),
-            )
-        }
-    }
-}
-
-private suspend fun loadBitmap(
-    contentResolver: ContentResolver,
-    uri: Uri?
-): Bitmap? {
-    if (uri == null) return null
-
-    return withContext(Dispatchers.IO) {
-        try {
-            val inputStream: InputStream? = contentResolver.openInputStream(uri)
-            BitmapFactory.decodeStream(inputStream)
-        } catch (e: FileNotFoundException) {
-            null
-        } catch (e: IOException) {
-            null
-        }
+fun AVSListItemViewPreview() {
+    val packageName = LocalContext.current.packageName
+    val uri = Uri.parse("android.resource://$packageName/${R.drawable.video_notification}")
+    AVSPlayerTheme {
+        AVSListItemView(
+            viewModel = null,
+            title = "Song",
+            description = "Song Song Song",
+            itemPos = 1,
+            uri = uri,
+            onClickCall = {}
+        )
     }
 }
 
