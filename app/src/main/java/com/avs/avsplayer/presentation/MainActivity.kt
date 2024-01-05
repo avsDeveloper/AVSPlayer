@@ -1,4 +1,4 @@
-package com.example.avsplayer.presentation
+package com.avs.avsplayer.presentation
 
 import android.app.Activity
 import android.content.ComponentName
@@ -33,14 +33,14 @@ import androidx.media3.common.Player
 import androidx.media3.common.Tracks
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
-import com.example.avsplayer.R
-import com.example.avsplayer.data.DataStoreRepository
-import com.example.avsplayer.data.MediaListItem
-import com.example.avsplayer.presentation.PlaybackService.Companion.STOP_AVS_PLAYER_PLAYBACK
-import com.example.avsplayer.presentation.theme.AVSPlayerTheme
-import com.example.avsplayer.presentation.view.AVSPlayerInfoView
-import com.example.avsplayer.presentation.view.AVSPlayerView
-import com.example.avsplayer.presentation.view.AVSProgressIndicatorView
+import com.avs.avsplayer.R
+import com.avs.avsplayer.data.DataStoreRepository
+import com.avs.avsplayer.data.MediaListItem
+import com.avs.avsplayer.presentation.PlaybackService.Companion.STOP_AVS_PLAYER_PLAYBACK
+import com.avs.avsplayer.presentation.theme.AVSPlayerTheme
+import com.avs.avsplayer.presentation.view.AVSPlayerInfoView
+import com.avs.avsplayer.presentation.view.AVSPlayerView
+import com.avs.avsplayer.presentation.view.AVSProgressIndicatorView
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.launch

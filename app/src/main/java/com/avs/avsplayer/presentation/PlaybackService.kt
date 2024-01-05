@@ -1,4 +1,4 @@
-package com.example.avsplayer.presentation
+package com.avs.avsplayer.presentation
 
 import android.app.PendingIntent
 import android.content.Intent

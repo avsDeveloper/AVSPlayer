@@ -1,4 +1,4 @@
-package com.example.avsplayer.presentation.view
+package com.avs.avsplayer.presentation.view
 
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
@@ -41,9 +41,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.media3.session.MediaController
-import com.example.avsplayer.R
-import com.example.avsplayer.presentation.MainActivityViewModel
-import com.example.avsplayer.presentation.theme.AVSPlayerTheme
+import com.avs.avsplayer.R
+import com.avs.avsplayer.presentation.MainActivityViewModel
+import com.avs.avsplayer.presentation.theme.AVSPlayerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

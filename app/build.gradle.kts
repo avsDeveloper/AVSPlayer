@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.avsplayer"
+    namespace = "com.avs.avsplayer"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.avsplayer"
+        applicationId = "com.avs.avsplayer"
         minSdk = 29
         targetSdk = 34
         versionCode = 1

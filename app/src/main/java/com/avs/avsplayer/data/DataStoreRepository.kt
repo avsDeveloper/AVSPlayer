@@ -1,4 +1,4 @@
-package com.example.avsplayer.data
+package com.avs.avsplayer.data
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences

@@ -1,4 +1,4 @@
-package com.example.avsplayer.presentation.view
+package com.avs.avsplayer.presentation.view
 
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
@@ -33,8 +33,8 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.PlayerView
 import androidx.media3.ui.PlayerView.ARTWORK_DISPLAY_MODE_FIT
-import com.example.avsplayer.R
-import com.example.avsplayer.presentation.MainActivityViewModel
+import com.avs.avsplayer.R
+import com.avs.avsplayer.presentation.MainActivityViewModel
 import kotlin.math.roundToInt
 
 @androidx.annotation.OptIn(UnstableApi::class)

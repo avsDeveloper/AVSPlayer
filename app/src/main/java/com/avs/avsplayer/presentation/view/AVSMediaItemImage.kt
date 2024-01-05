@@ -1,4 +1,4 @@
-package com.example.avsplayer.presentation.view
+package com.avs.avsplayer.presentation.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
@@ -9,7 +9,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.example.avsplayer.R
+import com.avs.avsplayer.R
 
 @Composable
 fun AVSMediaItemImage(

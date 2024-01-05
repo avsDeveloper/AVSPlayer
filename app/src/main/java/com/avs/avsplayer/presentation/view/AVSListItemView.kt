@@ -1,7 +1,5 @@
-package com.example.avsplayer.presentation.view
+package com.avs.avsplayer.presentation.view
 
-import android.content.res.Configuration
-import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MarqueeAnimationMode
 import androidx.compose.foundation.background
@@ -16,17 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.avsplayer.presentation.MainActivityViewModel
+import com.avs.avsplayer.presentation.MainActivityViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.avsplayer.R
-import com.example.avsplayer.presentation.theme.AVSPlayerTheme
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
