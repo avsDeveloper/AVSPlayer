@@ -1,4 +1,4 @@
-package com.avs.avsplayer.presentation.view
+package com.avs.avsplayer.compose
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

@@ -1,4 +1,4 @@
-package com.avs.avsplayer.presentation.theme
+package com.avs.avsplayer.ui
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme

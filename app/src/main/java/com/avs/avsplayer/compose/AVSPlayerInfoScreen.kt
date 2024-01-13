@@ -1,4 +1,4 @@
-package com.avs.avsplayer.presentation.view
+package com.avs.avsplayer.compose
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
@@ -23,8 +23,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.avs.avsplayer.R
-import com.avs.avsplayer.presentation.MainActivityViewModel
-import com.avs.avsplayer.presentation.theme.AVSPlayerTheme
+import com.avs.avsplayer.viewmodels.MainActivityViewModel
+import com.avs.avsplayer.ui.AVSPlayerTheme
 
 @Composable
 fun AVSPlayerInfoView(

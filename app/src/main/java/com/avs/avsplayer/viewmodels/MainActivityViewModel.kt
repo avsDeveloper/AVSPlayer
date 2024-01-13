@@ -1,9 +1,9 @@
-package com.avs.avsplayer.presentation
+package com.avs.avsplayer.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.avs.avsplayer.data.DataStoreRepository
+import com.avs.avsplayer.data.repositories.DataStoreRepository
 import com.avs.avsplayer.data.MediaListItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

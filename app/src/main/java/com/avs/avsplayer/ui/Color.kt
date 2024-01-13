@@ -1,4 +1,4 @@
-package com.avs.avsplayer.presentation.theme
+package com.avs.avsplayer.ui
 
 import androidx.compose.ui.graphics.Color
 

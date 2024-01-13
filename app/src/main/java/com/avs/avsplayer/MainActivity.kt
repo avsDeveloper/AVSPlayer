@@ -1,4 +1,4 @@
-package com.avs.avsplayer.presentation
+package com.avs.avsplayer
 
 import android.app.Activity
 import android.content.ComponentName
@@ -33,14 +33,17 @@ import androidx.media3.common.Player
 import androidx.media3.common.Tracks
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
-import com.avs.avsplayer.R
-import com.avs.avsplayer.data.DataStoreRepository
+import com.avs.avsplayer.services.PlaybackService.Companion.STOP_AVS_PLAYER_PLAYBACK
+import com.avs.avsplayer.compose.AVSPlayerInfoView
+import com.avs.avsplayer.compose.AVSPlayerView
+import com.avs.avsplayer.compose.AVSProgressIndicatorView
 import com.avs.avsplayer.data.MediaListItem
-import com.avs.avsplayer.presentation.PlaybackService.Companion.STOP_AVS_PLAYER_PLAYBACK
-import com.avs.avsplayer.presentation.theme.AVSPlayerTheme
-import com.avs.avsplayer.presentation.view.AVSPlayerInfoView
-import com.avs.avsplayer.presentation.view.AVSPlayerView
-import com.avs.avsplayer.presentation.view.AVSProgressIndicatorView
+import com.avs.avsplayer.data.repositories.DataStoreRepository
+import com.avs.avsplayer.services.PlaybackService
+import com.avs.avsplayer.ui.AVSPlayerTheme
+import com.avs.avsplayer.viewmodels.MainActivityViewModel
+import com.avs.avsplayer.viewmodels.MainActivityViewModelFactory
+import com.avs.avsplayer.viewmodels.UIState
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.launch
@@ -71,6 +74,13 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // open media if media shared
+        if (intent.action == Intent.ACTION_VIEW && intent.data != null) {
+            viewModel.setSelected()
+            viewModel.clearMediaListItem()
+            generateMediaList(intent)
+        }
 
         // finish activity and session if true
         lifecycleScope.launch {
@@ -109,17 +119,7 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
                     viewModel.setSelected()
                     viewModel.clearMediaListItem()
 
-                    if (it?.data?.clipData != null) {
-                        for (i in 0 until it.data?.clipData?.itemCount!!) {
-                            it.data?.clipData?.getItemAt(i)?.uri?.let {
-                                generateMediaListData(it)
-                            }
-                        }
-                    } else { // only one item selected
-                        it.data?.data?.let {
-                            generateMediaListData(it)
-                        }
-                    }
+                    generateMediaList(it?.data)
                 }
                 else -> {
                     viewModel.setFinished()
@@ -129,7 +129,21 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
         }
     }
 
-    private fun generateMediaListData(uri: Uri) {
+    private fun generateMediaList(intent: Intent?) {
+        if (intent?.clipData != null) {
+            for (i in 0 until intent.clipData?.itemCount!!) {
+                intent.clipData?.getItemAt(i)?.uri?.let {
+                    generateMediaListItem(it)
+                }
+            }
+        } else { // only one item selected
+            intent?.data?.let {
+                generateMediaListItem(it)
+            }
+        }
+    }
+
+    private fun generateMediaListItem(uri: Uri) {
 
         val projection = arrayOf(
             MediaStore.MediaColumns.DISPLAY_NAME,
@@ -181,7 +195,7 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
             window.decorView.setOnApplyWindowInsetsListener { view, windowInsets ->
                 if (windowInsets.isVisible(WindowInsetsCompat.Type.navigationBars())
                     || windowInsets.isVisible(WindowInsetsCompat.Type.statusBars())) {
-                        window.insetsController?.hide(WindowInsetsCompat.Type.systemBars())
+                    window.insetsController?.hide(WindowInsetsCompat.Type.systemBars())
                 }
                 view.onApplyWindowInsets(windowInsets)
             }
@@ -281,31 +295,31 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
             val mediaItem = MediaItem
                 .Builder()
 
-                val isVideo = item.mimeType?.contains("video", ignoreCase = true)
+            val isVideo = item.mimeType?.contains("video", ignoreCase = true)
 
-                val artworkUri = if  (isVideo == true) {
-                    Uri.parse("android.resource://$packageName/${R.drawable.video_notification}")
-                } else {
-                    Uri.parse("android.resource://$packageName/${R.drawable.audio_notification}")
-                }
+            val artworkUri = if  (isVideo == true) {
+                Uri.parse("android.resource://$packageName/${R.drawable.video_notification}")
+            } else {
+                Uri.parse("android.resource://$packageName/${R.drawable.audio_notification}")
+            }
 
-                val descriptionText = if (isVideo == true) {
-                    getString(R.string.video_file, item.mimeType)
-                } else {
-                    getString(R.string.audio_file, item.mimeType)
-                }
+            val descriptionText = if (isVideo == true) {
+                getString(R.string.video_file, item.mimeType)
+            } else {
+                getString(R.string.audio_file, item.mimeType)
+            }
 
-                mediaItem
-                    .setMediaId(item.uri.toString())
-                    .setMediaMetadata(
-                        MediaMetadata
-                            .Builder()
-                            .setTitle(item.displayName)
-                            .setDescription(descriptionText)
-                            .setArtworkUri(artworkUri)
-                            .build()
-                    )
-                    .setMimeType(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE))
+            mediaItem
+                .setMediaId(item.uri.toString())
+                .setMediaMetadata(
+                    MediaMetadata
+                        .Builder()
+                        .setTitle(item.displayName)
+                        .setDescription(descriptionText)
+                        .setArtworkUri(artworkUri)
+                        .build()
+                )
+                .setMimeType(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE))
 
             mediaItemList.add(mediaItem.build())
         }
@@ -313,3 +327,4 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
         return mediaItemList
     }
 }
+

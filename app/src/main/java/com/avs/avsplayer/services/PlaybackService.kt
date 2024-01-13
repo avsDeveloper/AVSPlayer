@@ -1,4 +1,4 @@
-package com.avs.avsplayer.presentation
+package com.avs.avsplayer.services
 
 import android.app.PendingIntent
 import android.content.Intent
@@ -8,6 +8,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
+import com.avs.avsplayer.MainActivity
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 
@@ -19,29 +20,27 @@ class PlaybackService : MediaLibraryService() {
     override fun onCreate() {
         super.onCreate()
 
-        player = ExoPlayer
-            .Builder(this)
+        player = ExoPlayer.Builder(this)
             .build()
 
-        mediaSession = MediaLibrarySession
-            .Builder(
-                this,
-                player,
-                object: MediaLibrarySession.Callback {
-                    override fun onAddMediaItems(
-                        mediaSession: MediaSession,
-                        controller: MediaSession.ControllerInfo,
-                        mediaItems: MutableList<MediaItem>
-                    ): ListenableFuture<MutableList<MediaItem>> {
+        mediaSession = MediaLibrarySession.Builder(
+            this,
+            player,
+            object : MediaLibrarySession.Callback {
+                override fun onAddMediaItems(
+                    mediaSession: MediaSession,
+                    controller: MediaSession.ControllerInfo,
+                    mediaItems: MutableList<MediaItem>
+                ): ListenableFuture<MutableList<MediaItem>> {
 
-                        val updatedMediaItems = mediaItems
-                            .map { it.buildUpon().setUri(it.mediaId).build() }
-                            .toMutableList()
+                    val updatedMediaItems = mediaItems
+                        .map { it.buildUpon().setUri(it.mediaId).build() }
+                        .toMutableList()
 
-                        return Futures.immediateFuture(updatedMediaItems)
+                    return Futures.immediateFuture(updatedMediaItems)
 
-                    }
-                }).build()
+                }
+            }).build()
 
         setSessionActivity()
     }
