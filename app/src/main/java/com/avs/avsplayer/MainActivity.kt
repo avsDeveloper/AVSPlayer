@@ -34,9 +34,9 @@ import androidx.media3.common.Tracks
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.avs.avsplayer.services.PlaybackService.Companion.STOP_AVS_PLAYER_PLAYBACK
-import com.avs.avsplayer.compose.AVSPlayerInfoView
-import com.avs.avsplayer.compose.AVSPlayerView
-import com.avs.avsplayer.compose.AVSProgressIndicatorView
+import com.avs.avsplayer.compose.AVSPlayerInfoScreen
+import com.avs.avsplayer.compose.AVSPlayerScreen
+import com.avs.avsplayer.compose.AVSProgressIndicator
 import com.avs.avsplayer.data.MediaListItem
 import com.avs.avsplayer.data.repositories.DataStoreRepository
 import com.avs.avsplayer.services.PlaybackService
@@ -75,11 +75,24 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // open media if media shared
+        // open without any steps if media shared
         if (intent.action == Intent.ACTION_VIEW && intent.data != null) {
-            viewModel.setSelected()
+            viewModel.setPrepareRunPlayer()
             viewModel.clearMediaListItem()
             generateMediaList(intent)
+        }
+
+        if (intent.action == Intent.ACTION_MAIN) {
+            lifecycleScope.launch {
+                viewModel.isShowFirstScreen.collect { shouldShow ->
+                    if (shouldShow) {
+                        viewModel.setShowInfoScreen()
+                    }
+                    else {
+                        viewModel.setOpenPicker()
+                    }
+                }
+            }
         }
 
         // finish activity and session if true
@@ -116,7 +129,7 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
 
             when(it.resultCode) {
                 Activity.RESULT_OK -> {
-                    viewModel.setSelected()
+                    viewModel.setPrepareRunPlayer()
                     viewModel.clearMediaListItem()
 
                     generateMediaList(it?.data)
@@ -217,18 +230,18 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
 
             // show initial screen or when the user opens it (currently the user cannot open it)
             UIState.InfoScreen -> {
-                AVSPlayerInfoView(viewModel)
+                AVSPlayerInfoScreen(viewModel)
             }
 
             // everything ready, open media picker
-            UIState.Initiated -> {
+            UIState.OpenPicker -> {
                 stopPlayback()
                 openPicker()
             }
 
             // create media session and show progress bar
-            UIState.Selected -> {
-                AVSProgressIndicatorView()
+            UIState.PrepareRunPlayer -> {
+                AVSProgressIndicator()
 
                 val sessionToken = SessionToken(
                     this,
@@ -250,15 +263,15 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
                                 viewModel.setCurrentItemNum(player.currentMediaItemIndex)
                             }
                         })
-                        viewModel.setReady()
+                        viewModel.setRunPlayer()
                     },
                     MoreExecutors.directExecutor()
                 )
             }
 
             // show and run player
-            UIState.Ready -> {
-                AVSPlayerView(
+            UIState.RunPlayer -> {
+                AVSPlayerScreen(
                     controllerFuture.get(),
                     isBottomSheetShown.value,
                     viewModel
@@ -267,7 +280,7 @@ class MainActivity : ComponentActivity(), MediaController.Listener {
 
             // JustCreated state, initial state, show progress bar
             else -> {
-                AVSProgressIndicatorView()
+                AVSProgressIndicator()
             }
         }
     }

@@ -47,7 +47,7 @@ import com.avs.avsplayer.ui.AVSPlayerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AVSPlayerBottomSheetView(
+fun AVSPlayerBottomSheet(
     onDismiss: () -> Unit,
     viewModel: MainActivityViewModel? = null,
     player: MediaController?
@@ -63,10 +63,10 @@ fun AVSPlayerBottomSheetView(
 
     val configuration = LocalConfiguration.current
     sheetWidth = if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            configuration.screenWidthDp.dp
-        } else {
-            configuration.screenHeightDp.dp
-        }
+        configuration.screenWidthDp.dp
+    } else {
+        configuration.screenHeightDp.dp
+    }
 
     Box(
         modifier = Modifier
@@ -138,11 +138,11 @@ fun AVSPlayerBottomSheetView(
                             .padding(start = 4.dp, top = 8.dp, bottom = 8.dp, end = 4.dp),
                         onClick = {
                             onDismiss() // not sure it should be done like this ))
-                            viewModel?.setInitialized()
+                            viewModel?.setOpenPicker()
                         },
                         shape = RoundedCornerShape(8.dp),
 
-                    ) {
+                        ) {
 
                         Icon(
                             imageVector = Icons.Default.Search,
@@ -166,7 +166,7 @@ fun AVSPlayerBottomSheetView(
                         },
                         shape = RoundedCornerShape(8.dp),
 
-                    ) {
+                        ) {
 
                         Icon(
                             imageVector = Icons.Default.Close,
@@ -197,7 +197,7 @@ fun AVSPlayerBottomSheetView(
 @Composable
 fun AVSPlayerBottomSheetViewPreview() {
     AVSPlayerTheme {
-        AVSPlayerBottomSheetView(
+        AVSPlayerBottomSheet(
             onDismiss = {},
             viewModel = null,
             player = null

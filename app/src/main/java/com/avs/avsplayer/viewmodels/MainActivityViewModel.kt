@@ -16,6 +16,9 @@ class MainActivityViewModel(
     private val _uiState = MutableStateFlow<UIState>(UIState.JustCreated)
     val uiState = _uiState
 
+    private val _isShowFirstScreen = MutableStateFlow(true)
+    val isShowFirstScreen = _isShowFirstScreen.asStateFlow()
+
     private val _currentItemNum = MutableStateFlow(0)
     val currentItemNum = _currentItemNum.asStateFlow()
 
@@ -28,10 +31,12 @@ class MainActivityViewModel(
     private val _mediaListItemList = MutableStateFlow<MutableList<MediaListItem>>(mutableListOf())
     val mediaListItemList = _mediaListItemList.asStateFlow()
 
-    init {
+    init  {
         viewModelScope.launch {
             repository.isShouldOpenFirstScreenFlow.collect { shouldOpen ->
-                _uiState.value = if (shouldOpen) UIState.InfoScreen else UIState.Initiated
+                viewModelScope.launch {
+                    _isShowFirstScreen.value = shouldOpen
+                }
             }
         }
     }
@@ -41,16 +46,18 @@ class MainActivityViewModel(
             repository.updateFirstScreenPref(isShown)
         }
     }
-
-    fun setInitialized() {
-        _uiState.value = UIState.Initiated
+    fun setShowInfoScreen() {
+        _uiState.value = UIState.InfoScreen
     }
-    fun setReady() {
-        _uiState.value = UIState.Ready
+    fun setOpenPicker() {
+        _uiState.value = UIState.OpenPicker
+    }
+    fun setRunPlayer() {
+        _uiState.value = UIState.RunPlayer
     }
 
-    fun setSelected() {
-        _uiState.value = UIState.Selected
+    fun setPrepareRunPlayer() {
+        _uiState.value = UIState.PrepareRunPlayer
     }
 
     fun showBottomSheet() {
@@ -89,13 +96,13 @@ sealed class UIState {
     object InfoScreen: UIState()
 
     // everything ready, open media picker
-    object Initiated: UIState()
+    object OpenPicker: UIState()
 
     // Media files selected, show Progress bar until files are opened
-    object Selected: UIState()
+    object PrepareRunPlayer: UIState()
 
     // Media files ready, show and run player
-    object Ready: UIState()
+    object RunPlayer: UIState()
 }
 
 

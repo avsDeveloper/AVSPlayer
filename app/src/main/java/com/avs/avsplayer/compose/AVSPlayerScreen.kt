@@ -39,7 +39,7 @@ import kotlin.math.roundToInt
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
-fun AVSPlayerView(
+fun AVSPlayerScreen(
     player: MediaController?,
     showBottomSheet: Boolean,
     viewModel: MainActivityViewModel
@@ -54,7 +54,7 @@ fun AVSPlayerView(
     ) {
 
         if (showBottomSheet) {
-            AVSPlayerBottomSheetView(
+            AVSPlayerBottomSheet(
                 onDismiss = { viewModel.hideBottomSheet() },
                 viewModel = viewModel,
                 player = player

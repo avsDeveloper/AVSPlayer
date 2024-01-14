@@ -27,16 +27,16 @@ import com.avs.avsplayer.viewmodels.MainActivityViewModel
 import com.avs.avsplayer.ui.AVSPlayerTheme
 
 @Composable
-fun AVSPlayerInfoView(
+fun AVSPlayerInfoScreen(
     viewModel: MainActivityViewModel? = null
 ) {
 
-        ConstraintLayout(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(color = MaterialTheme.colorScheme.surface),
-        ) {
-            Column {
+    ConstraintLayout(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.surface),
+    ) {
+        Column {
 
             Text(
                 text = stringResource(R.string.info_title),
@@ -102,30 +102,30 @@ fun AVSPlayerInfoView(
 
 
 
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 4.dp, top = 8.dp, bottom = 64.dp, end = 4.dp),
-                    onClick = {
-                        viewModel?.setFirstScreenShown(false)
-                        viewModel?.setInitialized()
-                    },
-                    shape = RoundedCornerShape(8.dp),
-                ) {
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 4.dp, top = 8.dp, bottom = 64.dp, end = 4.dp),
+                onClick = {
+                    viewModel?.setFirstScreenShown(false)
+                    viewModel?.setOpenPicker()
+                },
+                shape = RoundedCornerShape(8.dp),
+            ) {
 
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = null,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                    Text(
-                        text = "Close and start player",
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.width(24.dp))
-                }
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    modifier = Modifier.padding(8.dp)
+                )
+                Text(
+                    text = "Close and start player",
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.width(24.dp))
             }
         }
+    }
 }
 
 @Preview (name = "Light mode", showSystemUi = true, showBackground = true)
@@ -134,7 +134,7 @@ fun AVSPlayerInfoView(
 fun AVSPlayerInfoViewPreview() {
 
     AVSPlayerTheme {
-        AVSPlayerInfoView()
+        AVSPlayerInfoScreen()
     }
 
 }
