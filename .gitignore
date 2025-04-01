@@ -1,23 +1,37 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
-
-# added
+# Compiled source code
 *.apk
 *.ap_
 *.dex
 *.class
 bin/
 gen/
+
+# Gradle files
+.gradle/
+/build
+
+# IntelliJ IDEA
+*.iml
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+
+# Local environment properties
+local.properties
+
+# Android Studio build outputs
+/captures
+.externalNativeBuild/
+.cxx/
+
+# OS generated files
+.DS_Store
+
+# Log files
+*.log
+
+# Backup files
+*.bak
