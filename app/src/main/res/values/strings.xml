@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">AVSPlayer</string>
+    <string name="floating_action_button_content_description">Close options, Floating action button.</string>
+    <string name="video_file">Video file (%1$s)</string>
+    <string name="audio_file">Audio file (%1$s)</string>
+    <string name="info_title">Welcome to AVSPlayer!</string>
+    <string name="info_text">AVSPlayer is your go-to app for playing local video and audio files on your Android device in both forground and background modes. </string>
+    <string name="info_text2">It was designed to be as simple as possible: you just tap on the app\'s icon, select one or several files in build-in file browser, and enjoy it. You can use other apps, or turn off the screen - the player will keep working in the background. </string>
+    <string name="info_text3">For your convenience there is a floating button with several controls to open the playlist, close the player, or select other media. That\'s all. </string>
+    <string name="info_text4">For more information, you can find the link to the code repository in the app description on Play Market. </string>
+    <string name="info_text5"> * This screen is designed to be shown only once to help you get acquainted with the app. </string>
+
+</resources>
