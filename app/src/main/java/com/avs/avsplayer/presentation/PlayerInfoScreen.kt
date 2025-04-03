@@ -27,89 +27,45 @@ import com.avs.avsplayer.PlayerViewModel
 import com.avs.avsplayer.ui.AVSPlayerTheme
 
 @Composable
-fun PlayerInfoScreen(
-    viewModel: PlayerViewModel? = null
-) {
-
-    ConstraintLayout(
+fun PlayerInfoScreen(viewModel: PlayerViewModel? = null) {
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.surface),
+            .background(color = MaterialTheme.colorScheme.surface)
+            .padding(16.dp)
     ) {
-        Column {
+        Text(
+            text = stringResource(R.string.info_title),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.titleLarge
+        )
 
-            Text(
-                text = stringResource(R.string.info_title),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.titleLarge
-            )
+        InfoText(text = stringResource(R.string.info_text))
+        InfoText(text = stringResource(R.string.info_text2))
+        InfoText(text = stringResource(R.string.info_text3))
+        InfoText(
+            text = stringResource(R.string.info_text4),
+            modifier = Modifier.weight(1f)
+        )
+        InfoText(
+            text = stringResource(R.string.info_text5),
+            style = MaterialTheme.typography.bodyMedium
+        )
 
-            Text(
-                text = stringResource(R.string.info_text),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Left,
-                style = MaterialTheme.typography.bodyLarge
-            )
-
-            Text(
-                text = stringResource(R.string.info_text2),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Left,
-                style = MaterialTheme.typography.bodyLarge
-            )
-
-            Text(
-                text = stringResource(R.string.info_text3),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Left,
-                style = MaterialTheme.typography.bodyLarge
-            )
-
-            Text(
-                text = stringResource(R.string.info_text4),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-                    .weight(1f),
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Left,
-                style = MaterialTheme.typography.bodyLarge
-            )
-
-            Text(
-                text = stringResource(R.string.info_text5),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = TextAlign.Left,
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            ActionButton(
-                text = "Close and start player",
-                onClick = {
-                    viewModel?.setFirstScreenShown(false)
-                    viewModel?.setOpenPicker()
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 4.dp, top = 8.dp, bottom = 64.dp, end = 4.dp)
-            )
-        }
+        ActionButton(
+            text = "Close and start player",
+            onClick = {
+                viewModel?.setFirstScreenShown(false)
+                viewModel?.setOpenPicker()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 24.dp)
+        )
     }
 }
 
