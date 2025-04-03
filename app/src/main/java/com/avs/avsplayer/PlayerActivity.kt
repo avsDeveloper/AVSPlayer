@@ -1,7 +1,6 @@
 package com.avs.avsplayer
 
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -23,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
@@ -37,27 +35,16 @@ import com.avs.avsplayer.presentation.AVSPlayerInfoScreen
 import com.avs.avsplayer.presentation.AVSPlayerScreen
 import com.avs.avsplayer.presentation.AVSProgressIndicator
 import com.avs.avsplayer.data.MediaListItem
-import com.avs.avsplayer.data.repositories.DataStoreRepositoryImpl
 import com.avs.avsplayer.ui.AVSPlayerTheme
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
-private val Context.dataStore by preferencesDataStore(
-    name = "AVS_datastore"
-)
-
 @AndroidEntryPoint
 class PlayerActivity : ComponentActivity(), MediaController.Listener {
 
-    private val repository: DataStoreRepositoryImpl by lazy {
-        DataStoreRepositoryImpl(dataStore)
-    }
-
-    private val viewModel: PlayerViewModel by viewModels {
-        MainActivityViewModelFactory(repository)
-    }
+    private val viewModel: PlayerViewModel by viewModels()
 
     private lateinit var controllerFuture : ListenableFuture<MediaController>
     private lateinit var resultReceiver : ActivityResultLauncher<Intent>
@@ -225,18 +212,18 @@ class PlayerActivity : ComponentActivity(), MediaController.Listener {
 
         when (uiState.value) {
 
-            UIState.InfoScreen -> {
+            PlayerUIState.InfoScreen -> {
                 AVSPlayerInfoScreen(viewModel)
             }
 
             // everything ready, open media picker
-            UIState.OpenPicker -> {
+            PlayerUIState.OpenPicker -> {
                 stopPlayback()
                 openPicker()
             }
 
             // create media session and show progress bar
-            UIState.PrepareRunPlayer -> {
+            PlayerUIState.PrepareRunPlayer -> {
                 AVSProgressIndicator()
 
                 val sessionToken = SessionToken(
@@ -266,7 +253,7 @@ class PlayerActivity : ComponentActivity(), MediaController.Listener {
             }
 
             // show and run player
-            UIState.RunPlayer -> {
+            PlayerUIState.RunPlayer -> {
                 AVSPlayerScreen(
                     player = controllerFuture.get(),
                     showBottomSheet = isBottomSheetShown.value,
@@ -336,4 +323,3 @@ class PlayerActivity : ComponentActivity(), MediaController.Listener {
         return mediaItemList
     }
 }
-

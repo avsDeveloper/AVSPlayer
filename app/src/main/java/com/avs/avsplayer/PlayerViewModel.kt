@@ -1,9 +1,7 @@
 package com.avs.avsplayer
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.avs.avsplayer.data.repositories.DataStoreRepositoryImpl
 import com.avs.avsplayer.data.MediaListItem
 import com.avs.avsplayer.data.repositories.DataStoreRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,7 +15,7 @@ class PlayerViewModel @Inject constructor(
     private val repository: DataStoreRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<UIState>(UIState.JustCreated)
+    private val _uiState = MutableStateFlow<PlayerUIState>(PlayerUIState.JustCreated)
     val uiState = _uiState
 
     private val _isShowFirstScreen = MutableStateFlow(true)
@@ -51,17 +49,17 @@ class PlayerViewModel @Inject constructor(
         }
     }
     fun setShowInfoScreen() {
-        _uiState.value = UIState.InfoScreen
+        _uiState.value = PlayerUIState.InfoScreen
     }
     fun setOpenPicker() {
-        _uiState.value = UIState.OpenPicker
+        _uiState.value = PlayerUIState.OpenPicker
     }
     fun setRunPlayer() {
-        _uiState.value = UIState.RunPlayer
+        _uiState.value = PlayerUIState.RunPlayer
     }
 
     fun setPrepareRunPlayer() {
-        _uiState.value = UIState.PrepareRunPlayer
+        _uiState.value = PlayerUIState.PrepareRunPlayer
     }
 
     fun showBottomSheet() {
@@ -87,38 +85,5 @@ class PlayerViewModel @Inject constructor(
     fun clearMediaListItem() {
         _mediaListItemList.value.clear()
     }
-
 }
 
-sealed class UIState {
-
-    // show progress bar until we check if the app is opened first time,
-    // set automatically only when the app is just started
-    object JustCreated: UIState()
-
-    // the app is opened first time, so PlayerInfoView screen needs to be shown
-    object InfoScreen: UIState()
-
-    // everything ready, open media picker
-    object OpenPicker: UIState()
-
-    // Media files selected, show Progress bar until files are opened
-    object PrepareRunPlayer: UIState()
-
-    // Media files ready, show and run player
-    object RunPlayer: UIState()
-}
-
-
-class MainActivityViewModelFactory(private val repository: DataStoreRepositoryImpl)
-    : ViewModelProvider.Factory {
-
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(PlayerViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return PlayerViewModel(repository) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-
-}
