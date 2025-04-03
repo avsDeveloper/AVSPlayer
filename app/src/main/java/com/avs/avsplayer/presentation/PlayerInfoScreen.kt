@@ -27,7 +27,7 @@ import com.avs.avsplayer.PlayerViewModel
 import com.avs.avsplayer.ui.AVSPlayerTheme
 
 @Composable
-fun AVSPlayerInfoScreen(
+fun PlayerInfoScreen(
     viewModel: PlayerViewModel? = null
 ) {
 
@@ -89,7 +89,6 @@ fun AVSPlayerInfoScreen(
                 style = MaterialTheme.typography.bodyLarge
             )
 
-
             Text(
                 text = stringResource(R.string.info_text5),
                 modifier = Modifier
@@ -100,41 +99,51 @@ fun AVSPlayerInfoScreen(
                 style = MaterialTheme.typography.bodyMedium
             )
 
-
-
-            Button(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 4.dp, top = 8.dp, bottom = 64.dp, end = 4.dp),
+            ActionButton(
+                text = "Close and start player",
                 onClick = {
                     viewModel?.setFirstScreenShown(false)
                     viewModel?.setOpenPicker()
                 },
-                shape = RoundedCornerShape(8.dp),
-            ) {
-
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = null,
-                    modifier = Modifier.padding(8.dp)
-                )
-                Text(
-                    text = "Close and start player",
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.width(24.dp))
-            }
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 4.dp, top = 8.dp, bottom = 64.dp, end = 4.dp)
+            )
         }
+    }
+}
+
+@Composable
+ fun ActionButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        modifier = modifier,
+        onClick = onClick,
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Default.Check,
+            contentDescription = null,
+            modifier = Modifier.padding(8.dp)
+        )
+        Text(
+            text = text,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.width(24.dp))
     }
 }
 
 @Preview (name = "Light mode", showSystemUi = true, showBackground = true)
 @Preview (name = "Dark mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showSystemUi = true, showBackground = true)
 @Composable
-fun AVSPlayerInfoViewPreview() {
+private fun PlayerInfoViewPreview() {
 
     AVSPlayerTheme {
-        AVSPlayerInfoScreen()
+        PlayerInfoScreen()
     }
 
 }

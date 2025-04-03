@@ -15,45 +15,30 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 
 @Composable
-fun AVSProgressIndicator() {
-    ConstraintLayout(
-    modifier = Modifier
-        .fillMaxSize()
-        .background(MaterialTheme.colorScheme.surface)
-    ) {
-        Column (
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-        ){
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .width(64.dp)
-            )
-        }
-    }
+fun ProgressIndicator() {
+    ProgressIndicatorContent()
 }
 
 @Preview
 @Composable
-fun AVSProgressIndicatorViewPreview() {
+private fun ProgressIndicatorViewPreview() {
+    ProgressIndicatorContent()
+}
+
+@Composable
+private fun ProgressIndicatorContent() {
     ConstraintLayout(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
     ) {
-        Column (
+        Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-        ){
+            modifier = Modifier.fillMaxSize()
+        ) {
             CircularProgressIndicator(
-                modifier = Modifier
-                    .width(64.dp)
+                modifier = Modifier.width(64.dp)
             )
         }
     }

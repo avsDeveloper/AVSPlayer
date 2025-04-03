@@ -12,15 +12,23 @@ import androidx.compose.ui.unit.dp
 import com.avs.avsplayer.R
 
 @Composable
-fun AVSMediaItemImage(
-    mediaType: MediaType
+fun MediaItemImage(
+    mediaType: MediaType,
+    modifier: Modifier = Modifier,
+    size: Int = 36,
+    contentDescription: String? = null
 ) {
+    val iconRes = when (mediaType) {
+        MediaType.AUDIO -> R.drawable.icon_audio_list_transp
+        MediaType.VIDEO -> R.drawable.icon_video_list_transp
+    }
+
     Image(
-        painterResource(id = if (mediaType == MediaType.AUDIO) R.drawable.icon_audio_list_transp else R.drawable.icon_video_list_transp),
-        contentDescription = null,
+        painter = painterResource(id = iconRes),
+        contentDescription = contentDescription,
         contentScale = ContentScale.Crop,
-        modifier = Modifier
-            .size(36.dp)
+        modifier = modifier
+            .size(size.dp)
             .clip(CircleShape)
     )
 }

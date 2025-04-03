@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
+import androidx.compose.runtime.State
 
 @Composable
 fun AVSListItemView(
@@ -66,7 +67,7 @@ fun AVSListItemView(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        AVSMediaItemImage(
+        MediaItemImage(
             if (description.toString().contains("video", true)) MediaType.VIDEO
             else MediaType.AUDIO
         )
@@ -81,11 +82,7 @@ fun AVSListItemView(
             Text(
                 modifier = Modifier
                     .padding(bottom = 4.dp)
-                    .basicMarquee(
-                        animationMode = if (itemPos == currentPosition?.value) MarqueeAnimationMode.Immediately
-                        else MarqueeAnimationMode.WhileFocused,
-                        repeatDelayMillis = 0,
-                    ),
+                    .itemMarquee(itemPos, currentPosition),
                 text = title,
                 maxLines = 1,
                 style = MaterialTheme.typography.labelLarge,
@@ -95,17 +92,20 @@ fun AVSListItemView(
             Text(
                 text = description,
                 maxLines = 1,
-                modifier = Modifier
-                    .basicMarquee(
-                        animationMode = if (itemPos == currentPosition?.value) MarqueeAnimationMode.Immediately
-                        else MarqueeAnimationMode.WhileFocused,
-                        repeatDelayMillis = 0,
-                    ),
+                modifier = Modifier.itemMarquee(itemPos, currentPosition),
                 style = MaterialTheme.typography.bodySmall,
                 color = textColor
             )
         }
     }
 }
+
+private fun Modifier.itemMarquee(itemPos: Int, currentPosition: State<Int>?) =
+    basicMarquee(
+        animationMode = if (itemPos == currentPosition?.value)
+            MarqueeAnimationMode.Immediately
+        else MarqueeAnimationMode.WhileFocused,
+        repeatDelayMillis = 0,
+    )
 
 

@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalConfiguration
@@ -48,7 +49,7 @@ import com.avs.avsplayer.ui.AVSPlayerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AVSPlayerBottomSheet(
+fun PlayerControlBottomSheet(
     onDismiss: () -> Unit,
     viewModel: PlayerViewModel? = null,
     player: MediaController?
@@ -134,57 +135,57 @@ fun AVSPlayerBottomSheet(
                     .padding(vertical = 8.dp)
                 ) {
 
-                    Button (
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 4.dp, top = 8.dp, bottom = 8.dp, end = 4.dp),
+                    val buttonModifier =  Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp, top = 8.dp, bottom = 8.dp, end = 4.dp)
+
+                    ControlButton(
+                        text = "Select",
+                        icon = Icons.Default.Search,
+                        modifier = buttonModifier,
                         onClick = {
-                            onDismiss() // not sure it should be done like this ))
+                            onDismiss()
                             viewModel?.setOpenPicker()
-                        },
-                        shape = RoundedCornerShape(8.dp),
+                        }
+                    )
 
-                        ) {
-
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = null,
-                            modifier = Modifier.padding(8.dp)
-                        )
-                        Text(
-                            text = "Select",
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                    }
-
-                    Button (
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(top = 8.dp, bottom = 8.dp, start = 4.dp, end = 4.dp),
+                    ControlButton(
+                        text = "Close",
+                        icon = Icons.Default.Close,
+                        modifier = buttonModifier,
                         onClick = {
-                            onDismiss() // not sure it should be done like this ))
+                            onDismiss()
                             viewModel?.setFinished()
-                        },
-                        shape = RoundedCornerShape(8.dp),
-
-                        ) {
-
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = null,
-                            modifier = Modifier.padding(8.dp)
-                        )
-                        Text(
-                            modifier = Modifier.padding(end = 8.dp),
-                            text = "Close",
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                    }
+                        }
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ControlButton(
+    text: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        modifier = modifier.padding(start = 4.dp, top = 8.dp, bottom = 8.dp, end = 4.dp),
+        onClick = onClick,
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.padding(8.dp)
+        )
+        Text(
+            text = text,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.width(16.dp))
     }
 }
 
@@ -197,9 +198,9 @@ fun AVSPlayerBottomSheet(
     device = "id:pixel_xl"
 )
 @Composable
-fun AVSPlayerBottomSheetViewPreview() {
+private fun PlayerBottomSheetViewPreview() {
     AVSPlayerTheme {
-        AVSPlayerBottomSheet(
+        PlayerControlBottomSheet(
             onDismiss = {},
             viewModel = null,
             player = null
