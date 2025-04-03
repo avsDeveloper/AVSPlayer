@@ -23,12 +23,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.avs.avsplayer.R
-import com.avs.avsplayer.MainActivityViewModel
+import com.avs.avsplayer.PlayerViewModel
 import com.avs.avsplayer.ui.AVSPlayerTheme
 
 @Composable
 fun AVSPlayerInfoScreen(
-    viewModel: MainActivityViewModel? = null
+    viewModel: PlayerViewModel? = null
 ) {
 
     ConstraintLayout(

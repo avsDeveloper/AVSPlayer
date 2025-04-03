@@ -1,9 +1,6 @@
 package com.avs.avsplayer.presentation
 
 import android.util.Log
-import android.view.MotionEvent
-import android.view.TextureView
-import android.widget.FrameLayout
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,8 +30,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
@@ -42,7 +37,7 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import androidx.media3.ui.PlayerView.*
 import com.avs.avsplayer.R
-import com.avs.avsplayer.MainActivityViewModel
+import com.avs.avsplayer.PlayerViewModel
 import kotlin.math.roundToInt
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -50,7 +45,7 @@ import kotlin.math.roundToInt
 fun AVSPlayerScreen(
     player: MediaController?,
     showBottomSheet: Boolean,
-    viewModel: MainActivityViewModel
+    viewModel: PlayerViewModel
 ) {
     val context = LocalContext.current
     val playerView = remember { PlayerView(context) }

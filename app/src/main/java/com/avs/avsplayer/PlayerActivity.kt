@@ -37,23 +37,25 @@ import com.avs.avsplayer.presentation.AVSPlayerInfoScreen
 import com.avs.avsplayer.presentation.AVSPlayerScreen
 import com.avs.avsplayer.presentation.AVSProgressIndicator
 import com.avs.avsplayer.data.MediaListItem
-import com.avs.avsplayer.data.repositories.DataStoreRepository
+import com.avs.avsplayer.data.repositories.DataStoreRepositoryImpl
 import com.avs.avsplayer.ui.AVSPlayerTheme
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 private val Context.dataStore by preferencesDataStore(
     name = "AVS_datastore"
 )
 
+@AndroidEntryPoint
 class PlayerActivity : ComponentActivity(), MediaController.Listener {
 
-    private val repository: DataStoreRepository by lazy {
-        DataStoreRepository(dataStore)
+    private val repository: DataStoreRepositoryImpl by lazy {
+        DataStoreRepositoryImpl(dataStore)
     }
 
-    private val viewModel: MainActivityViewModel by viewModels {
+    private val viewModel: PlayerViewModel by viewModels {
         MainActivityViewModelFactory(repository)
     }
 

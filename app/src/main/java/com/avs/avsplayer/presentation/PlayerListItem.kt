@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.avs.avsplayer.MainActivityViewModel
+import com.avs.avsplayer.PlayerViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
@@ -23,7 +23,7 @@ import androidx.compose.ui.Alignment
 
 @Composable
 fun AVSListItemView(
-    viewModel: MainActivityViewModel? = null,
+    viewModel: PlayerViewModel? = null,
     title: String,
     description: String,
     itemPos: Int,

@@ -3,15 +3,19 @@ package com.avs.avsplayer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.avs.avsplayer.data.repositories.DataStoreRepository
+import com.avs.avsplayer.data.repositories.DataStoreRepositoryImpl
 import com.avs.avsplayer.data.MediaListItem
+import com.avs.avsplayer.data.repositories.DataStoreRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MainActivityViewModel(
+@HiltViewModel
+class PlayerViewModel @Inject constructor(
     private val repository: DataStoreRepository
-): ViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UIState>(UIState.JustCreated)
     val uiState = _uiState
@@ -106,13 +110,13 @@ sealed class UIState {
 }
 
 
-class MainActivityViewModelFactory(private val repository: DataStoreRepository)
+class MainActivityViewModelFactory(private val repository: DataStoreRepositoryImpl)
     : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(MainActivityViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(PlayerViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return MainActivityViewModel(repository) as T
+            return PlayerViewModel(repository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

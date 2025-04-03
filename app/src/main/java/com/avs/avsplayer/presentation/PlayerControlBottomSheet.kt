@@ -43,14 +43,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.media3.session.MediaController
-import com.avs.avsplayer.MainActivityViewModel
+import com.avs.avsplayer.PlayerViewModel
 import com.avs.avsplayer.ui.AVSPlayerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AVSPlayerBottomSheet(
     onDismiss: () -> Unit,
-    viewModel: MainActivityViewModel? = null,
+    viewModel: PlayerViewModel? = null,
     player: MediaController?
 ) {
 
