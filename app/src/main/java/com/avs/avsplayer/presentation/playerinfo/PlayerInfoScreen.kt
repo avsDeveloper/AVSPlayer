@@ -14,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.avs.avsplayer.PlayerAction
 import com.avs.avsplayer.R
 import com.avs.avsplayer.PlayerViewModel
 import com.avs.avsplayer.presentation.player.components.InfoText
@@ -21,7 +22,9 @@ import com.avs.avsplayer.presentation.playerinfo.components.ActionButton
 import com.avs.avsplayer.ui.AVSPlayerTheme
 
 @Composable
-fun PlayerInfoScreen(viewModel: PlayerViewModel? = null) {
+fun PlayerInfoScreen(
+    viewModel: PlayerViewModel? = null
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -53,8 +56,9 @@ fun PlayerInfoScreen(viewModel: PlayerViewModel? = null) {
         ActionButton(
             text = "Close and start player",
             onClick = {
-                viewModel?.setFirstScreenShown(false)
-                viewModel?.setOpenPicker()
+                viewModel?.let {
+                    it.dispatch(PlayerAction.SetFirstScreenShown(true))
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()

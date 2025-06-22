@@ -30,9 +30,9 @@ fun AVSListItemView(
     itemPos: Int,
     onClickCall: () -> Unit
 ) {
-    val currentPosition = viewModel?.currentItemNum?.collectAsStateWithLifecycle()
+    val currentPosition = viewModel?.state?.collectAsStateWithLifecycle()
 
-    val surfaceModifier = if (itemPos == currentPosition?.value) {
+    val surfaceModifier = if (itemPos == currentPosition?.value?.currentPosition) {
         Modifier
             .fillMaxWidth()
             .clickable {
@@ -56,7 +56,7 @@ fun AVSListItemView(
             )
     }
 
-    val textColor = if (itemPos == currentPosition?.value) {
+    val textColor = if (itemPos == currentPosition?.value?.currentPosition) {
         MaterialTheme.colorScheme.onSurfaceVariant
     } else {
         MaterialTheme.colorScheme.onSurface
@@ -82,7 +82,7 @@ fun AVSListItemView(
             Text(
                 modifier = Modifier
                     .padding(bottom = 4.dp)
-                    .itemMarquee(itemPos, currentPosition),
+                    .itemMarquee(itemPos, currentPosition?.value?.currentPosition),
                 text = title,
                 maxLines = 1,
                 style = MaterialTheme.typography.labelLarge,
@@ -92,7 +92,7 @@ fun AVSListItemView(
             Text(
                 text = description,
                 maxLines = 1,
-                modifier = Modifier.itemMarquee(itemPos, currentPosition),
+                modifier = Modifier.itemMarquee(itemPos, currentPosition?.value?.currentPosition),
                 style = MaterialTheme.typography.bodySmall,
                 color = textColor
             )
@@ -100,9 +100,9 @@ fun AVSListItemView(
     }
 }
 
-private fun Modifier.itemMarquee(itemPos: Int, currentPosition: State<Int>?) =
+private fun Modifier.itemMarquee(itemPos: Int, currentPosition: Int?) =
     basicMarquee(
-        animationMode = if (itemPos == currentPosition?.value)
+        animationMode = if (itemPos == currentPosition)
             MarqueeAnimationMode.Immediately
         else MarqueeAnimationMode.WhileFocused,
         repeatDelayMillis = 0,

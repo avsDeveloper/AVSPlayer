@@ -23,6 +23,7 @@ import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import com.avs.avsplayer.PlayerAction
 import com.avs.avsplayer.R
 import com.avs.avsplayer.PlayerViewModel
 import com.avs.avsplayer.presentation.player.components.DraggableFAB
@@ -45,7 +46,8 @@ fun PlayerUiScreen(
         playerView.artworkDisplayMode = PlayerView.ARTWORK_DISPLAY_MODE_FIT
         playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
         playerView.videoSurfaceView?.setOnLongClickListener {
-            viewModel.showBottomSheet()
+            viewModel.dispatch(PlayerAction.ShowBottomSheet)
+//            viewModel.showBottomSheet()
             true
         }
 
@@ -78,7 +80,10 @@ fun PlayerUiScreen(
     ) {
         if (showBottomSheet) {
             PlayerControlBottomSheet(
-                onDismiss = { viewModel.hideBottomSheet() },
+                onDismiss = {
+                    viewModel.dispatch(PlayerAction.HideBottomSheet)
+//                    viewModel.hideBottomSheet()
+                            },
                 viewModel = viewModel,
                 player = player
             )
@@ -95,7 +100,10 @@ fun PlayerUiScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             DraggableFAB(
-                onClick = { viewModel.showBottomSheet() },
+                onClick = {
+                    viewModel.dispatch(PlayerAction.ShowBottomSheet)
+//                    viewModel.showBottomSheet()
+                          },
                 modifier = Modifier
                     .align(alignment = Alignment.BottomEnd)
                     .padding(bottom = 56.dp, end = 56.dp)

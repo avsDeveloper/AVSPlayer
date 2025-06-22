@@ -19,6 +19,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -32,7 +33,7 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.avs.avsplayer.PlaybackService.Companion.STOP_AVS_PLAYER_PLAYBACK
 import com.avs.avsplayer.presentation.ProgressIndicator
-import com.avs.avsplayer.data.MediaListItem
+import com.avs.avsplayer.domain.model.MediaListItem
 import com.avs.avsplayer.presentation.player.PlayerUiScreen
 import com.avs.avsplayer.presentation.playerinfo.PlayerInfoScreen
 import com.avs.avsplayer.ui.AVSPlayerTheme
@@ -52,40 +53,17 @@ class PlayerActivity : ComponentActivity(), MediaController.Listener {
 
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
-            viewModel.showBottomSheet()
+            viewModel.dispatch(PlayerAction.ShowBottomSheet)
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // open without any steps if media shared
+        // Handle media shared via ACTION_VIEW
         if (intent.action == Intent.ACTION_VIEW && intent.data != null) {
-            viewModel.setPrepareRunPlayer()
-            viewModel.clearMediaListItem()
+            viewModel.dispatch(PlayerAction.PrepareRunPlayer)
             generateMediaList(intent)
-        }
-
-        if (intent.action == Intent.ACTION_MAIN) {
-            lifecycleScope.launch {
-                viewModel.isShowFirstScreen.collect { shouldShow ->
-                    if (shouldShow) {
-                        viewModel.setShowInfoScreen()
-                    } else {
-                        viewModel.setOpenPicker()
-                    }
-                }
-            }
-        }
-
-        // finish activity and session if true
-        lifecycleScope.launch {
-            viewModel.isFinished.collect { isFinished ->
-                if (isFinished) {
-                    stopPlayback()
-                    finish()
-                }
-            }
         }
 
         setContent {
@@ -98,24 +76,35 @@ class PlayerActivity : ComponentActivity(), MediaController.Listener {
             }
         }
 
-        // remove toolbar, etc. to show player in full screen mode
+        // Remove toolbar, etc. to show player in full screen mode
         setFullScreen()
 
-        // show bottom sheet dialog instead of closing the app
+        // Show bottom sheet dialog instead of closing the app
         onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
 
-        // set "Selected" UI state if media files picked
+        // Set "Selected" UI state if media files picked
         resultReceiver = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) {
             when (it.resultCode) {
                 RESULT_OK -> {
-                    viewModel.setPrepareRunPlayer()
-                    viewModel.clearMediaListItem()
+                    viewModel.dispatch(PlayerAction.PrepareRunPlayer)
                     generateMediaList(it.data)
                 }
                 else -> {
-                    viewModel.setFinished()
+                    viewModel.dispatch(PlayerAction.Finish)
+                }
+            }
+        }
+
+        // Observe effects for one-off events (picker, finish, etc.)
+        lifecycleScope.launch {
+            viewModel.effect.collect { effect ->
+                when (effect) {
+                    is PlayerEffect.OpenPicker -> openPicker()
+                    is PlayerEffect.StopPlayback -> stopPlayback()
+                    is PlayerEffect.Finish -> finish()
+                    is PlayerEffect.PreparePlayer -> preparePlayer()
                 }
             }
         }
@@ -149,14 +138,14 @@ class PlayerActivity : ComponentActivity(), MediaController.Listener {
                     val mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE))
                     val size = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.SIZE))
 
-                    viewModel.addMediaListItem(
+                    viewModel.dispatch( PlayerAction.AddMediaListItem(
                         MediaListItem(
                             uri = uri,
                             displayName = displayName,
                             mimeType = mimeType,
                             size = size
                         )
-                    )
+                    ))
                 }
             }
         } catch (e: Exception) {
@@ -195,65 +184,66 @@ private fun setFullScreen() {
 
     @Composable
     fun PlayerScreen() {
-        val uiState = viewModel.uiState.collectAsStateWithLifecycle()
-        val isBottomSheetShown = viewModel.isBottomSheetShown.collectAsStateWithLifecycle()
+        val state by viewModel.state.collectAsStateWithLifecycle()
 
-        when (uiState.value) {
+        when (state.uiState) {
 
             // First launch, show some how-to-use text
-            PlayerUIState.InfoScreen -> {
+            PlayerUiState.INFO_SCREEN -> {
                 PlayerInfoScreen(viewModel)
             }
 
             // everything ready, open media picker
-            PlayerUIState.OpenPicker -> {
+            PlayerUiState.PICKER -> {
                 stopPlayback()
                 openPicker()
             }
 
-            // create media session and show progress bar
-            PlayerUIState.PrepareRunPlayer -> {
+            PlayerUiState.EMPTY_PLAYER -> {
                 ProgressIndicator()
-                val sessionToken = SessionToken(
-                    this,
-                    ComponentName(this, PlaybackService::class.java)
-                )
-                controllerFuture = MediaController
-                    .Builder(this, sessionToken)
-                    .buildAsync()
-                controllerFuture.addListener(
-                    {
-                        val items = createMediaItems(viewModel.mediaListItemList.value)
-                        player = controllerFuture.get()
-                        player.setMediaItems(items)
-                        player.prepare()
-                        player.play()
-                        player.addListener(object : Player.Listener {
-                            override fun onTracksChanged(tracks: Tracks) {
-                                super.onTracksChanged(tracks)
-                                viewModel.setCurrentItemNum(player.currentMediaItemIndex)
-                            }
-                        })
-                        viewModel.setRunPlayer()
-                    },
-                    MoreExecutors.directExecutor()
-                )
             }
 
-            // show and run player
-            PlayerUIState.RunPlayer -> {
-                PlayerUiScreen(
-                    player = controllerFuture.get(),
-                    showBottomSheet = isBottomSheetShown.value,
-                    viewModel
-                )
+            PlayerUiState.PLAYER -> {
+                if (state.selectedMedia.isNotEmpty()) {
+                    PlayerUiScreen(
+                        player = controllerFuture.get(),
+                        showBottomSheet = state.showBottomSheet,
+                        viewModel
+                    )
+                }
             }
 
-            // JustCreated state, initial state, show progress bar
-            else -> {
+            PlayerUiState.NONE -> {
                 ProgressIndicator()
             }
         }
+    }
+
+    private fun preparePlayer() {
+        val sessionToken = SessionToken(
+            this,
+            ComponentName(this, PlaybackService::class.java)
+        )
+        controllerFuture = MediaController
+            .Builder(this, sessionToken)
+            .buildAsync()
+        controllerFuture.addListener(
+            {
+                val items = createMediaItems(viewModel.state.value.selectedMedia)
+                player = controllerFuture.get()
+                player.setMediaItems(items)
+                player.prepare()
+                player.play()
+                player.addListener(object : Player.Listener {
+                    override fun onTracksChanged(tracks: Tracks) {
+                        super.onTracksChanged(tracks)
+                        viewModel.dispatch(PlayerAction.SetCurrentItemNum(player.currentMediaItemIndex))
+                    }
+                })
+                viewModel.dispatch(PlayerAction.RunPlayer)
+            },
+            MoreExecutors.directExecutor()
+        )
     }
 
     //  open standard Android file browser to pick audio / video files

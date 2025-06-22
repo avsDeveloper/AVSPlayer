@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.media3.session.MediaController
+import com.avs.avsplayer.PlayerAction
 import com.avs.avsplayer.PlayerViewModel
 import com.avs.avsplayer.ui.AVSPlayerTheme
 
@@ -111,7 +112,7 @@ fun PlayerControlBottomSheet(
                     icon = Icons.Default.Search,
                     onClick = {
                         onDismiss()
-                        viewModel?.setOpenPicker()
+                        viewModel?.dispatch(PlayerAction.OpenPicker)
                     },
                     modifier = Modifier.weight(1f)
                 )
@@ -123,7 +124,7 @@ fun PlayerControlBottomSheet(
                     icon = Icons.Default.Close,
                     onClick = {
                         onDismiss()
-                        viewModel?.setFinished()
+                        viewModel?.dispatch(PlayerAction.Finish)
                     },
                     modifier = Modifier.weight(1f)
                 )
