@@ -8,3 +8,7 @@ The goal is to create an extremely simple audio/video player that works seamless
 1. While there are numerous media players available, many of them are overly complicated with multiple screens, file browsers, background services, and advertisements. Feeling frustrated with this, I decided to create a simpler alternative.
 2. With over 9 years of Android development experience, I had never attempted to implement a media player app. Thus, I decided to spend a couple of days experimenting with Jetpack Compose and Jetpack Media3 libraries.
 
+## Upd (06.22.25)
+It’s still the same simple player with the same functionality, but:
+1. It’s no longer just a one-day experiment with the median3 library meant to create a usable app for personal use. It now follows Clean Architecture and MVI principles.
+2. Fixed a bug where, on Android 15+, the video had an incorrect aspect ratio on first launch.
