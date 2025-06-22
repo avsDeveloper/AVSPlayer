@@ -23,18 +23,20 @@ import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
-import com.avs.avsplayer.PlayerAction
 import com.avs.avsplayer.R
-import com.avs.avsplayer.PlayerViewModel
 import com.avs.avsplayer.presentation.player.components.DraggableFAB
 import com.avs.avsplayer.presentation.player.components.PlayerControlBottomSheet
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
-fun PlayerUiScreen(
+fun PlayerScreen(
     player: MediaController?,
     showBottomSheet: Boolean,
-    viewModel: PlayerViewModel
+    onHideBottomSheet: () -> Unit,
+    onShowBottomSheet: () -> Unit,
+    onOpenPicker: () -> Unit,
+    onFinish: () -> Unit,
+    currentPosition: Int
 ) {
     val context = LocalContext.current
     val playerView = remember { PlayerView(context) }
@@ -46,8 +48,7 @@ fun PlayerUiScreen(
         playerView.artworkDisplayMode = PlayerView.ARTWORK_DISPLAY_MODE_FIT
         playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
         playerView.videoSurfaceView?.setOnLongClickListener {
-            viewModel.dispatch(PlayerAction.ShowBottomSheet)
-//            viewModel.showBottomSheet()
+            onShowBottomSheet()
             true
         }
 
@@ -80,12 +81,11 @@ fun PlayerUiScreen(
     ) {
         if (showBottomSheet) {
             PlayerControlBottomSheet(
-                onDismiss = {
-                    viewModel.dispatch(PlayerAction.HideBottomSheet)
-//                    viewModel.hideBottomSheet()
-                            },
-                viewModel = viewModel,
-                player = player
+                onDismiss = onHideBottomSheet,
+                onOpenPicker = onOpenPicker,
+                onFinish = onFinish,
+                player = player,
+                currentPosition = currentPosition
             )
         }
 
@@ -100,10 +100,7 @@ fun PlayerUiScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             DraggableFAB(
-                onClick = {
-                    viewModel.dispatch(PlayerAction.ShowBottomSheet)
-//                    viewModel.showBottomSheet()
-                          },
+                onClick = onShowBottomSheet,
                 modifier = Modifier
                     .align(alignment = Alignment.BottomEnd)
                     .padding(bottom = 56.dp, end = 56.dp)

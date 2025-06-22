@@ -12,31 +12,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.avs.avsplayer.PlayerViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
-import androidx.compose.runtime.State
 
 @Composable
 fun AVSListItemView(
-    viewModel: PlayerViewModel? = null,
     title: String,
     description: String,
     itemPos: Int,
-    onClickCall: () -> Unit
+    currentPosition: Int,
+    onClick: () -> Unit
 ) {
-    val currentPosition = viewModel?.state?.collectAsStateWithLifecycle()
-
-    val surfaceModifier = if (itemPos == currentPosition?.value?.currentPosition) {
+    val surfaceModifier = if (itemPos == currentPosition) {
         Modifier
             .fillMaxWidth()
             .clickable {
-                onClickCall()
+                onClick()
             }
             .height(64.dp)
             .background(
@@ -47,7 +42,7 @@ fun AVSListItemView(
         Modifier
             .fillMaxWidth()
             .clickable {
-                onClickCall()
+                onClick()
             }
             .height(64.dp)
             .background(
@@ -56,7 +51,7 @@ fun AVSListItemView(
             )
     }
 
-    val textColor = if (itemPos == currentPosition?.value?.currentPosition) {
+    val textColor = if (itemPos == currentPosition) {
         MaterialTheme.colorScheme.onSurfaceVariant
     } else {
         MaterialTheme.colorScheme.onSurface
@@ -66,9 +61,8 @@ fun AVSListItemView(
         modifier = surfaceModifier.padding(start = 8.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-
         MediaItemImage(
-            if (description.toString().contains("video", true)) MediaType.VIDEO
+            if (description.contains("video", true)) MediaType.VIDEO
             else MediaType.AUDIO
         )
 
@@ -78,11 +72,10 @@ fun AVSListItemView(
                 .padding(start = 8.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-
             Text(
                 modifier = Modifier
                     .padding(bottom = 4.dp)
-                    .itemMarquee(itemPos, currentPosition?.value?.currentPosition),
+                    .itemMarquee(itemPos, currentPosition),
                 text = title,
                 maxLines = 1,
                 style = MaterialTheme.typography.labelLarge,
@@ -92,7 +85,7 @@ fun AVSListItemView(
             Text(
                 text = description,
                 maxLines = 1,
-                modifier = Modifier.itemMarquee(itemPos, currentPosition?.value?.currentPosition),
+                modifier = Modifier.itemMarquee(itemPos, currentPosition),
                 style = MaterialTheme.typography.bodySmall,
                 color = textColor
             )
@@ -100,7 +93,7 @@ fun AVSListItemView(
     }
 }
 
-private fun Modifier.itemMarquee(itemPos: Int, currentPosition: Int?) =
+private fun Modifier.itemMarquee(itemPos: Int, currentPosition: Int) =
     basicMarquee(
         animationMode = if (itemPos == currentPosition)
             MarqueeAnimationMode.Immediately

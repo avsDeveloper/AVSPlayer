@@ -34,7 +34,7 @@ import androidx.media3.session.SessionToken
 import com.avs.avsplayer.PlaybackService.Companion.STOP_AVS_PLAYER_PLAYBACK
 import com.avs.avsplayer.presentation.ProgressIndicator
 import com.avs.avsplayer.domain.model.MediaListItem
-import com.avs.avsplayer.presentation.player.PlayerUiScreen
+import com.avs.avsplayer.presentation.player.PlayerScreen
 import com.avs.avsplayer.presentation.playerinfo.PlayerInfoScreen
 import com.avs.avsplayer.ui.AVSPlayerTheme
 import com.google.common.util.concurrent.ListenableFuture
@@ -71,7 +71,7 @@ class PlayerActivity : ComponentActivity(), MediaController.Listener {
                 Surface(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    PlayerScreen()
+                    PlayerRoot()
                 }
             }
         }
@@ -182,15 +182,19 @@ private fun setFullScreen() {
         startService(stopIntent)
     }
 
+
     @Composable
-    fun PlayerScreen() {
+    fun PlayerRoot() {
         val state by viewModel.state.collectAsStateWithLifecycle()
 
         when (state.uiState) {
-
             // First launch, show some how-to-use text
             PlayerUiState.INFO_SCREEN -> {
-                PlayerInfoScreen(viewModel)
+                PlayerInfoScreen(
+                    onCloseClicked = {
+                        viewModel.dispatch(PlayerAction.SetFirstScreenShown(true))
+                    }
+                )
             }
 
             // everything ready, open media picker
@@ -205,10 +209,22 @@ private fun setFullScreen() {
 
             PlayerUiState.PLAYER -> {
                 if (state.selectedMedia.isNotEmpty()) {
-                    PlayerUiScreen(
+                    PlayerScreen(
                         player = controllerFuture.get(),
+                        currentPosition = state.currentPosition,
                         showBottomSheet = state.showBottomSheet,
-                        viewModel
+                        onHideBottomSheet = {
+                            viewModel.dispatch(PlayerAction.HideBottomSheet)
+                        },
+                        onShowBottomSheet = {
+                            viewModel.dispatch(PlayerAction.ShowBottomSheet)
+                        },
+                        onOpenPicker = {
+                            viewModel.dispatch(PlayerAction.OpenPicker)
+                        },
+                        onFinish = {
+                            viewModel.dispatch(PlayerAction.Finish)
+                        }
                     )
                 }
             }

@@ -27,16 +27,15 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.media3.session.MediaController
-import com.avs.avsplayer.PlayerAction
-import com.avs.avsplayer.PlayerViewModel
-import com.avs.avsplayer.ui.AVSPlayerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerControlBottomSheet(
     onDismiss: () -> Unit,
-    viewModel: PlayerViewModel? = null,
-    player: MediaController?
+    onOpenPicker: () -> Unit,
+    onFinish: () -> Unit,
+    player: MediaController?,
+    currentPosition: Int
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val sheetWidth = LocalConfiguration.current.let { config ->
@@ -89,13 +88,14 @@ fun PlayerControlBottomSheet(
                 player?.mediaItemCount?.let { count ->
                     items(count) { index ->
                         AVSListItemView(
-                            viewModel = viewModel,
                             title = player.getMediaItemAt(index).mediaMetadata.title.toString(),
                             description = player.getMediaItemAt(index).mediaMetadata.description.toString(),
-                            itemPos = index
-                        ) {
-                            if (index != player.currentMediaItemIndex) player.seekTo(index, 0)
-                        }
+                            itemPos = index,
+                            currentPosition = currentPosition,
+                            onClick = {
+                                if (index != player.currentMediaItemIndex) player.seekTo(index, 0)
+                            }
+                        )
                     }
                 }
             }
@@ -112,7 +112,7 @@ fun PlayerControlBottomSheet(
                     icon = Icons.Default.Search,
                     onClick = {
                         onDismiss()
-                        viewModel?.dispatch(PlayerAction.OpenPicker)
+                        onOpenPicker()
                     },
                     modifier = Modifier.weight(1f)
                 )
@@ -124,7 +124,7 @@ fun PlayerControlBottomSheet(
                     icon = Icons.Default.Close,
                     onClick = {
                         onDismiss()
-                        viewModel?.dispatch(PlayerAction.Finish)
+                        onFinish()
                     },
                     modifier = Modifier.weight(1f)
                 )
@@ -132,7 +132,6 @@ fun PlayerControlBottomSheet(
         }
     }
 }
-
 
 @Preview(
     name = "big",
@@ -143,12 +142,12 @@ fun PlayerControlBottomSheet(
 )
 @Composable
 private fun PlayerBottomSheetViewPreview() {
-    AVSPlayerTheme {
-        PlayerControlBottomSheet(
-            onDismiss = {},
-            viewModel = null,
-            player = null
-        )
-    }
+//    AVSPlayerTheme {
+//        PlayerControlBottomSheet(
+//            onDismiss = {},
+//            viewModel = null,
+//            player = null
+//        )
+//    }
 }
 
