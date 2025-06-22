@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.avs.avsplayer.data.repositories.DataStoreRepository
-import com.avs.avsplayer.data.repositories.DataStoreRepositoryImpl
+import com.avs.avsplayer.domain.repository.DataStoreRepository
+import com.avs.avsplayer.data.repository.DataStoreRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.Provides

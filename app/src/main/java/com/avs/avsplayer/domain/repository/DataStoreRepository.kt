@@ -1,4 +1,4 @@
-package com.avs.avsplayer.data.repositories
+package com.avs.avsplayer.domain.repository
 
 import androidx.datastore.preferences.core.Preferences
 import kotlinx.coroutines.flow.Flow

@@ -3,7 +3,7 @@ package com.avs.avsplayer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.avs.avsplayer.data.MediaListItem
-import com.avs.avsplayer.data.repositories.DataStoreRepository
+import com.avs.avsplayer.domain.repository.DataStoreRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

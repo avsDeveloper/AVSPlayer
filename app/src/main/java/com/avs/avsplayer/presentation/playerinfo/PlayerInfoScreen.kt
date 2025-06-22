@@ -1,18 +1,11 @@
-package com.avs.avsplayer.presentation
+package com.avs.avsplayer.presentation.playerinfo
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,9 +14,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
 import com.avs.avsplayer.R
 import com.avs.avsplayer.PlayerViewModel
+import com.avs.avsplayer.presentation.player.components.InfoText
+import com.avs.avsplayer.presentation.playerinfo.components.ActionButton
 import com.avs.avsplayer.ui.AVSPlayerTheme
 
 @Composable
@@ -66,30 +60,6 @@ fun PlayerInfoScreen(viewModel: PlayerViewModel? = null) {
                 .fillMaxWidth()
                 .padding(vertical = 24.dp)
         )
-    }
-}
-
-@Composable
- fun ActionButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Button(
-        modifier = modifier,
-        onClick = onClick,
-        shape = RoundedCornerShape(8.dp)
-    ) {
-        Icon(
-            imageVector = Icons.Default.Check,
-            contentDescription = null,
-            modifier = Modifier.padding(8.dp)
-        )
-        Text(
-            text = text,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.width(24.dp))
     }
 }
 

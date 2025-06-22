@@ -31,10 +31,10 @@ import androidx.media3.common.Tracks
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.avs.avsplayer.PlaybackService.Companion.STOP_AVS_PLAYER_PLAYBACK
-import com.avs.avsplayer.presentation.PlayerInfoScreen
-import com.avs.avsplayer.presentation.PlayerScreen
 import com.avs.avsplayer.presentation.ProgressIndicator
 import com.avs.avsplayer.data.MediaListItem
+import com.avs.avsplayer.presentation.player.PlayerUiScreen
+import com.avs.avsplayer.presentation.playerinfo.PlayerInfoScreen
 import com.avs.avsplayer.ui.AVSPlayerTheme
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
@@ -242,7 +242,7 @@ private fun setFullScreen() {
 
             // show and run player
             PlayerUIState.RunPlayer -> {
-                PlayerScreen(
+                PlayerUiScreen(
                     player = controllerFuture.get(),
                     showBottomSheet = isBottomSheetShown.value,
                     viewModel

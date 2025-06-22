@@ -1,4 +1,4 @@
-package com.avs.avsplayer.presentation
+package com.avs.avsplayer.presentation.player.components
 
 import androidx.compose.foundation.MarqueeAnimationMode
 import androidx.compose.foundation.background

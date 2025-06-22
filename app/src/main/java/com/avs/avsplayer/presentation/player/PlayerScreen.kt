@@ -1,4 +1,4 @@
-package com.avs.avsplayer.presentation
+package com.avs.avsplayer.presentation.player
 
 import android.util.Log
 import androidx.compose.foundation.layout.Box
@@ -25,10 +25,12 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.avs.avsplayer.R
 import com.avs.avsplayer.PlayerViewModel
+import com.avs.avsplayer.presentation.player.components.DraggableFAB
+import com.avs.avsplayer.presentation.player.components.PlayerControlBottomSheet
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
-fun PlayerScreen(
+fun PlayerUiScreen(
     player: MediaController?,
     showBottomSheet: Boolean,
     viewModel: PlayerViewModel
