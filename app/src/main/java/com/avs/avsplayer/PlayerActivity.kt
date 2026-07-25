@@ -1,55 +1,70 @@
 package com.avs.avsplayer
 
+import android.Manifest
 import android.content.ComponentName
 import android.content.Intent
-import android.media.MediaMetadataRetriever
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
-import android.view.WindowInsets
-import android.view.WindowInsetsController
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
-import androidx.media3.common.Tracks
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.avs.avsplayer.PlaybackService.Companion.STOP_AVS_PLAYER_PLAYBACK
-import com.avs.avsplayer.presentation.ProgressIndicator
 import com.avs.avsplayer.domain.model.MediaListItem
+import com.avs.avsplayer.presentation.ProgressIndicator
 import com.avs.avsplayer.presentation.player.PlayerScreen
 import com.avs.avsplayer.presentation.playerinfo.PlayerInfoScreen
 import com.avs.avsplayer.ui.AVSPlayerTheme
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import androidx.core.net.toUri
 
-@AndroidEntryPoint
-class PlayerActivity : ComponentActivity(), MediaController.Listener {
+class PlayerActivity : ComponentActivity() {
 
-    private val viewModel: PlayerViewModel by viewModels()
+    private val viewModel: PlayerViewModel by viewModels { PlayerViewModel.Factory }
 
-    private lateinit var controllerFuture: ListenableFuture<MediaController>
-    private lateinit var resultReceiver: ActivityResultLauncher<Intent>
-    lateinit var player: Player
+    private var controllerFuture: ListenableFuture<MediaController>? = null
+    private var controller by mutableStateOf<MediaController?>(null)
+
+    private val resultReceiver = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            openMedia(result.data)
+        } else {
+            viewModel.dispatch(PlayerAction.Finish)
+        }
+    }
+
+    private val notificationPermissionReceiver = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {
+    //  do nothing here, it still works, but without notifications
+    }
 
     private val onBackPressedCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
@@ -60,10 +75,8 @@ class PlayerActivity : ComponentActivity(), MediaController.Listener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Handle media shared via ACTION_VIEW
         if (intent.action == Intent.ACTION_VIEW && intent.data != null) {
-            viewModel.dispatch(PlayerAction.PrepareRunPlayer)
-            generateMediaList(intent)
+            openMedia(intent)
         }
 
         setContent {
@@ -76,28 +89,10 @@ class PlayerActivity : ComponentActivity(), MediaController.Listener {
             }
         }
 
-        // Remove toolbar, etc. to show player in full screen mode
         setFullScreen()
 
-        // Show bottom sheet dialog instead of closing the app
         onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
 
-        // Set "Selected" UI state if media files picked
-        resultReceiver = registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) {
-            when (it.resultCode) {
-                RESULT_OK -> {
-                    viewModel.dispatch(PlayerAction.PrepareRunPlayer)
-                    generateMediaList(it.data)
-                }
-                else -> {
-                    viewModel.dispatch(PlayerAction.Finish)
-                }
-            }
-        }
-
-        // Observe effects for one-off events (picker, finish, etc.)
         lifecycleScope.launch {
             viewModel.effect.collect { effect ->
                 when (effect) {
@@ -110,107 +105,46 @@ class PlayerActivity : ComponentActivity(), MediaController.Listener {
         }
     }
 
-    private fun generateMediaList(intent: Intent?) {
-        intent?.let {
-            val uris = mutableListOf<Uri>()
-            if (it.clipData != null) {
-                for (i in 0 until it.clipData!!.itemCount) {
-                    it.clipData?.getItemAt(i)?.uri?.let { uri -> uris.add(uri) }
-                }
-            } else {
-                it.data?.let { uri -> uris.add(uri) }
-            }
-            uris.forEach { uri -> generateMediaListItem(uri) }
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (intent.action == Intent.ACTION_VIEW && intent.data != null) {
+            openMedia(intent)
         }
     }
 
-    private fun generateMediaListItem(uri: Uri) {
-        val projection = arrayOf(
-            MediaStore.MediaColumns.DISPLAY_NAME,
-            MediaStore.MediaColumns.MIME_TYPE,
-            MediaStore.MediaColumns.SIZE,
-        )
-
-        try {
-            contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    val displayName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME))
-                    val mimeType = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.MIME_TYPE))
-                    val size = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.SIZE))
-
-                    viewModel.dispatch( PlayerAction.AddMediaListItem(
-                        MediaListItem(
-                            uri = uri,
-                            displayName = displayName,
-                            mimeType = mimeType,
-                            size = size
-                        )
-                    ))
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("PlayerActivity", "Error generating media list item", e)
+    override fun onStart() {
+        super.onStart()
+        if (viewModel.state.value.uiState == PlayerUiState.PLAYER) {
+            connectController()
         }
     }
 
-//    @Suppress("DEPRECATION")
-private fun setFullScreen() {
-    actionBar?.hide()
-    WindowCompat.setDecorFitsSystemWindows(window, false)
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-    } else {
-        window.insetsController?.apply {
-            hide(WindowInsets.Type.statusBars())
-            systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        }
-
-        window.decorView.setOnApplyWindowInsetsListener { view, windowInsets ->
-            if (windowInsets.isVisible(WindowInsetsCompat.Type.navigationBars())
-                || windowInsets.isVisible(WindowInsetsCompat.Type.statusBars())
-            ) {
-                window.insetsController?.hide(WindowInsetsCompat.Type.systemBars())
-            }
-            view.onApplyWindowInsets(windowInsets)
-        }
+    override fun onStop() {
+        controllerFuture?.let { MediaController.releaseFuture(it) }
+        controllerFuture = null
+        controller = null
+        super.onStop()
     }
-}
-
-    private fun stopPlayback() {
-        val stopIntent = Intent(this@PlayerActivity, PlaybackService::class.java)
-        stopIntent.action = STOP_AVS_PLAYER_PLAYBACK
-        startService(stopIntent)
-    }
-
 
     @Composable
     fun PlayerRoot() {
         val state by viewModel.state.collectAsStateWithLifecycle()
 
         when (state.uiState) {
-            // First launch, show some how-to-use text
             PlayerUiState.INFO_SCREEN -> {
                 PlayerInfoScreen(
                     onCloseClicked = {
-                        viewModel.dispatch(PlayerAction.SetFirstScreenShown(true))
+                        viewModel.dispatch(PlayerAction.SetFirstScreenShown)
                     }
                 )
             }
 
-            // everything ready, open media picker
-            PlayerUiState.PICKER -> {
-                stopPlayback()
-                openPicker()
-            }
-
-            PlayerUiState.EMPTY_PLAYER -> {
-                ProgressIndicator()
-            }
-
             PlayerUiState.PLAYER -> {
-                if (state.selectedMedia.isNotEmpty()) {
+                val player = controller
+                if (player != null) {
                     PlayerScreen(
-                        player = controllerFuture.get(),
+                        player = player,
                         currentPosition = state.currentPosition,
                         showBottomSheet = state.showBottomSheet,
                         onHideBottomSheet = {
@@ -226,43 +160,148 @@ private fun setFullScreen() {
                             viewModel.dispatch(PlayerAction.Finish)
                         }
                     )
+                } else {
+                    ProgressIndicator()
                 }
             }
 
-            PlayerUiState.NONE -> {
+            else -> {
                 ProgressIndicator()
             }
         }
     }
 
-    private fun preparePlayer() {
-        val sessionToken = SessionToken(
-            this,
-            ComponentName(this, PlaybackService::class.java)
+    private fun openMedia(intent: Intent?) {
+        if (intent == null) return
+        val uris = mutableListOf<Uri>()
+        val clipData = intent.clipData
+        if (clipData != null) {
+            for (i in 0 until clipData.itemCount) {
+                clipData.getItemAt(i)?.uri?.let { uris.add(it) }
+            }
+        } else {
+            intent.data?.let { uris.add(it) }
+        }
+        val items = uris.map { buildMediaListItem(it) }
+        if (items.isNotEmpty()) {
+            viewModel.dispatch(PlayerAction.PrepareRunPlayer(items))
+        }
+    }
+
+    private fun buildMediaListItem(uri: Uri): MediaListItem {
+        var displayName: String? = null
+        var mimeType: String? = null
+        var size: Long? = null
+
+        val projection = arrayOf(
+            MediaStore.MediaColumns.DISPLAY_NAME,
+            MediaStore.MediaColumns.MIME_TYPE,
+            MediaStore.MediaColumns.SIZE,
         )
-        controllerFuture = MediaController
-            .Builder(this, sessionToken)
+        try {
+            contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    displayName = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME)
+                        .takeIf { it >= 0 }?.let { cursor.getString(it) }
+                    mimeType = cursor.getColumnIndex(MediaStore.MediaColumns.MIME_TYPE)
+                        .takeIf { it >= 0 }?.let { cursor.getString(it) }
+                    size = cursor.getColumnIndex(MediaStore.MediaColumns.SIZE)
+                        .takeIf { it >= 0 }?.let { cursor.getLong(it) }
+                }
+            }
+        } catch (_: Exception) {}
+
+        if (mimeType == null) {
+            mimeType = try {
+                contentResolver.getType(uri)
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        return MediaListItem(
+            uri = uri.toString(),
+            displayName = displayName ?: uri.lastPathSegment ?: uri.toString(),
+            mimeType = mimeType,
+            size = size
+        )
+    }
+
+    private fun setFullScreen() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.attributes = window.attributes.apply {
+            layoutInDisplayCutoutMode =
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+        }
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            hide(WindowInsetsCompat.Type.systemBars())
+        }
+    }
+
+    private fun stopPlayback() {
+        val stopIntent = Intent(this, PlaybackService::class.java)
+        stopIntent.action = STOP_AVS_PLAYER_PLAYBACK
+        startService(stopIntent)
+    }
+
+    /**
+     * Without POST_NOTIFICATIONS the foreground service still runs, but Android 13 and later hide
+     * its media notification, which also removes the lock-screen controls.
+     */
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        val granted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+        if (!granted) {
+            notificationPermissionReceiver.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    private fun preparePlayer() {
+        requestNotificationPermission()
+        connectController { player ->
+            player.setMediaItems(createMediaItems(viewModel.state.value.selectedMedia))
+            player.prepare()
+            player.play()
+            viewModel.dispatch(PlayerAction.RunPlayer)
+        }
+    }
+
+    private fun connectController(onConnected: (MediaController) -> Unit = {}) {
+        controller?.let {
+            onConnected(it)
+            return
+        }
+        val future = controllerFuture ?: MediaController
+            .Builder(
+                this,
+                SessionToken(this, ComponentName(this, PlaybackService::class.java))
+            )
             .buildAsync()
-        controllerFuture.addListener(
+            .also { controllerFuture = it }
+        future.addListener(
             {
-                val items = createMediaItems(viewModel.state.value.selectedMedia)
-                player = controllerFuture.get()
-                player.setMediaItems(items)
-                player.prepare()
-                player.play()
-                player.addListener(object : Player.Listener {
-                    override fun onTracksChanged(tracks: Tracks) {
-                        super.onTracksChanged(tracks)
-                        viewModel.dispatch(PlayerAction.SetCurrentItemNum(player.currentMediaItemIndex))
-                    }
-                })
-                viewModel.dispatch(PlayerAction.RunPlayer)
+                if (controllerFuture === future) {
+                    val connected = runCatching { future.get() }.getOrNull() ?: return@addListener
+                    connected.addListener(object : Player.Listener {
+                        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                            viewModel.dispatch(
+                                PlayerAction.SetCurrentItemNum(connected.currentMediaItemIndex)
+                            )
+                        }
+                    })
+                    controller = connected
+                    onConnected(connected)
+                }
             },
             MoreExecutors.directExecutor()
         )
     }
 
-    //  open standard Android file browser to pick audio / video files
     private fun openPicker() {
         val pickMediaIntent = Intent(Intent.ACTION_GET_CONTENT).apply {
             type = "*/*"
@@ -272,40 +311,23 @@ private fun setFullScreen() {
         resultReceiver.launch(pickMediaIntent)
     }
 
-    private fun createMediaItems(uriList: List<MediaListItem>): List<MediaItem> {
-        val retriever = MediaMetadataRetriever()
-        val mediaItemList = mutableListOf<MediaItem>()
+    private fun createMediaItems(items: List<MediaListItem>): List<MediaItem> =
+        items.map { item ->
+            val isVideo = item.mimeType?.contains("video", ignoreCase = true) == true
+            val artworkRes = if (isVideo) R.drawable.video_notification else R.drawable.audio_notification
+            val descriptionText = item.mimeType?.uppercase()?.replace("/", " · ")
+                ?: getString(if (isVideo) R.string.video_label else R.string.audio_label)
 
-        uriList.forEach { item ->
-            retriever.setDataSource(this, item.uri)
-
-            val mediaItem = MediaItem.Builder()
-            val isVideo = item.mimeType?.contains("video", ignoreCase = true)
-            val artworkUri = if (isVideo == true) {
-                Uri.parse("android.resource://$packageName/${R.drawable.video_notification}")
-            } else {
-                Uri.parse("android.resource://$packageName/${R.drawable.audio_notification}")
-            }
-            val descriptionText = if (isVideo == true) {
-                getString(R.string.video_file, item.mimeType)
-            } else {
-                getString(R.string.audio_file, item.mimeType)
-            }
-
-            mediaItem
-                .setMediaId(item.uri.toString())
+            MediaItem.Builder()
+                .setMediaId(item.uri)
+                .setMimeType(item.mimeType)
                 .setMediaMetadata(
                     MediaMetadata.Builder()
                         .setTitle(item.displayName)
                         .setDescription(descriptionText)
-                        .setArtworkUri(artworkUri)
+                        .setArtworkUri("android.resource://$packageName/$artworkRes".toUri())
                         .build()
                 )
-                .setMimeType(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE))
-
-            mediaItemList.add(mediaItem.build())
+                .build()
         }
-        retriever.release()
-        return mediaItemList
-    }
 }

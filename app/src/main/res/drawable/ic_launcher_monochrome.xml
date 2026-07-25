@@ -1,0 +1,20 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Themed-icon layer (Android 13+). The system supplies the tint, so the colour
+         here only has to be opaque. Same geometry as ic_launcher_foreground. -->
+    <group
+        android:scaleX="1.8"
+        android:scaleY="1.8"
+        android:translateX="33.7"
+        android:translateY="32.4">
+        <path
+            android:pathData="M7.5,5.2L7.5,18.8L19,12Z"
+            android:fillColor="#FF000000"
+            android:strokeColor="#FF000000"
+            android:strokeWidth="1.15"
+            android:strokeLineJoin="round" />
+    </group>
+</vector>

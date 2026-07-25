@@ -1,23 +1,25 @@
 package com.avs.avsplayer
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.avs.avsplayer.data.repository.DataStoreRepositoryImpl
 import com.avs.avsplayer.domain.repository.DataStoreRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class PlayerViewModel @Inject constructor(
+class PlayerViewModel(
     private val repository: DataStoreRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PlayerState())
     val state: StateFlow<PlayerState> = _state.asStateFlow()
 
-    private val _effect = MutableSharedFlow<PlayerEffect>()
-    val effect: SharedFlow<PlayerEffect> = _effect.asSharedFlow()
+    private val _effect = Channel<PlayerEffect>(Channel.UNLIMITED)
+    val effect: Flow<PlayerEffect> = _effect.receiveAsFlow()
 
     init {
         dispatch(PlayerAction.CheckFirstScreen)
@@ -27,43 +29,36 @@ class PlayerViewModel @Inject constructor(
         when (action) {
             is PlayerAction.CheckFirstScreen -> {
                 viewModelScope.launch {
-                    repository.isShouldOpenFirstScreenFlow.collect { shouldOpen ->
-                            _state.update { it.copy(
-                                showInfoScreen = shouldOpen,
-                                uiState = if (shouldOpen) PlayerUiState.INFO_SCREEN else PlayerUiState.PICKER
-                            ) }
+                    val shouldOpen = repository.isShouldOpenFirstScreenFlow.first()
+                    if (state.value.uiState == PlayerUiState.NONE) {
+                        if (shouldOpen) {
+                            _state.update { it.copy(uiState = PlayerUiState.INFO_SCREEN) }
+                        } else {
+                            dispatch(PlayerAction.OpenPicker)
+                        }
                     }
                 }
             }
             is PlayerAction.SetFirstScreenShown -> {
                 viewModelScope.launch {
-                    repository.updateFirstScreenPref(shouldOpenFirst = action.isShown.not())
+                    repository.updateFirstScreenPref(shouldOpenFirst = false)
                 }
-                _state.update { it.copy(
-                    showInfoScreen = false
-                ) }
-            }
-            is PlayerAction.ShowInfoScreen -> {
-                if (state.value.showInfoScreen) {
-                    _state.update { it.copy(
-                        showInfoScreen = false,
-                        uiState = PlayerUiState.INFO_SCREEN
-                    ) }
-                }
+                dispatch(PlayerAction.OpenPicker)
             }
             is PlayerAction.OpenPicker -> {
                 _state.update { it.copy(
-                    uiState = PlayerUiState.PICKER
+                    uiState = PlayerUiState.PICKER,
+                    showBottomSheet = false
                 ) }
+                _effect.trySend(PlayerEffect.StopPlayback)
+                _effect.trySend(PlayerEffect.OpenPicker)
             }
             is PlayerAction.PrepareRunPlayer -> {
                 _state.update { it.copy(
-                    selectedMedia = emptyList(),
+                    selectedMedia = action.items,
                     uiState = PlayerUiState.EMPTY_PLAYER
                 ) }
-                viewModelScope.launch {
-                    _effect.emit(PlayerEffect.PreparePlayer)
-                }
+                _effect.trySend(PlayerEffect.PreparePlayer)
             }
             is PlayerAction.RunPlayer -> {
                 _state.update { it.copy(
@@ -81,26 +76,21 @@ class PlayerViewModel @Inject constructor(
                 ) }
             }
             is PlayerAction.Finish -> {
-                _state.update { it.copy(isFinished = true) }
-                viewModelScope.launch {
-                    _effect.emit(PlayerEffect.StopPlayback)
-                    _effect.emit(PlayerEffect.Finish)
-                }
+                _effect.trySend(PlayerEffect.StopPlayback)
+                _effect.trySend(PlayerEffect.Finish)
             }
             is PlayerAction.SetCurrentItemNum -> {
                 _state.update { it.copy(
                     currentPosition = action.itemNum
                 ) }
             }
-            is PlayerAction.AddMediaListItem -> {
-                _state.update { it.copy(
-                    selectedMedia = it.selectedMedia + action.item
-                ) }
-            }
-            is PlayerAction.ClearMediaList -> {
-                _state.update { it.copy(
-                    selectedMedia = emptyList()
-                ) }
+        }
+    }
+
+    companion object {
+        val Factory = viewModelFactory {
+            initializer {
+                PlayerViewModel(DataStoreRepositoryImpl(checkNotNull(this[APPLICATION_KEY])))
             }
         }
     }

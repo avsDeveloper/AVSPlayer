@@ -2,30 +2,29 @@ package com.avs.avsplayer
 
 import android.app.PendingIntent
 import android.content.Intent
-import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
+import androidx.media3.session.MediaSessionService
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 
-class PlaybackService : MediaLibraryService() {
+class PlaybackService : MediaSessionService() {
 
-    private var mediaSession: MediaLibrarySession? = null
-    private lateinit var player: ExoPlayer
+    private var mediaSession: MediaSession? = null
 
     override fun onCreate() {
         super.onCreate()
 
-        player = ExoPlayer.Builder(this)
+        val player = ExoPlayer.Builder(this)
             .build()
 
-        mediaSession = MediaLibrarySession.Builder(
+        mediaSession = MediaSession.Builder(
             this,
-            player,
-            object : MediaLibrarySession.Callback {
+            player
+        )
+            .setCallback(object : MediaSession.Callback {
                 override fun onAddMediaItems(
                     mediaSession: MediaSession,
                     controller: MediaSession.ControllerInfo,
@@ -37,11 +36,17 @@ class PlaybackService : MediaLibraryService() {
                         .toMutableList()
 
                     return Futures.immediateFuture(updatedMediaItems)
-
                 }
-            }).build()
-
-        setSessionActivity()
+            })
+            .setSessionActivity(
+                PendingIntent.getActivity(
+                    this,
+                    0,
+                    Intent(this, PlayerActivity::class.java),
+                    PendingIntent.FLAG_IMMUTABLE
+                )
+            )
+            .build()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -52,27 +57,12 @@ class PlaybackService : MediaLibraryService() {
         return super.onStartCommand(intent, flags, startId)
     }
 
-    @OptIn(UnstableApi::class)
-    private fun setSessionActivity() {
-        val intent = Intent(
-            this,
-            PlayerActivity::class.java
-        )
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            intent,
-            PendingIntent.FLAG_MUTABLE
-        )
-        mediaSession?.setSessionActivity(pendingIntent)
-    }
-
     override fun onDestroy() {
         mediaSession?.run {
             player.release()
             release()
-            mediaSession = null
         }
+        mediaSession = null
         super.onDestroy()
     }
 
@@ -82,9 +72,11 @@ class PlaybackService : MediaLibraryService() {
         stopSelf()
     }
 
-    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? = mediaSession
+    @UnstableApi
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? =
+        mediaSession.takeIf { controllerInfo.isTrusted }
 
     companion object {
-        val STOP_AVS_PLAYER_PLAYBACK = "STOP_AVS_PLAYER_PLAYBACK"
+        const val STOP_AVS_PLAYER_PLAYBACK = "STOP_AVS_PLAYER_PLAYBACK"
     }
 }

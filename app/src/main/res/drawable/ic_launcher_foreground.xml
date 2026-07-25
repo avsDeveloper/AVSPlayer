@@ -1,15 +1,20 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24"
-    android:tint="#B6CCB8">
-  <group android:scaleX="0.58"
-      android:scaleY="0.58"
-      android:translateX="5.04"
-      android:translateY="5.04">
-    <path
-        android:fillColor="@android:color/white"
-        android:pathData="M8,5v14l11,-7z"/>
-  </group>
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Play mark from ic_play.xml, scaled into the 72dp visible area and nudged
+         right so the triangle reads as optically centred. -->
+    <group
+        android:scaleX="1.8"
+        android:scaleY="1.8"
+        android:translateX="33.7"
+        android:translateY="32.4">
+        <path
+            android:pathData="M7.5,5.2L7.5,18.8L19,12Z"
+            android:fillColor="#FFECC56F"
+            android:strokeColor="#FFECC56F"
+            android:strokeWidth="1.15"
+            android:strokeLineJoin="round" />
+    </group>
 </vector>

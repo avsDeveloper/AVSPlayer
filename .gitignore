@@ -21,3 +21,14 @@ local.properties
 *.class
 bin/
 gen/
+
+app/release/
+*.aab
+
+.idea/
+
+!.idea/codeStyles/
+!.idea/copyright/
+
+*.hprof
+

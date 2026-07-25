@@ -11,4 +11,4 @@ The goal is to create an extremely simple audio/video player that works seamless
 ## Upd (06.22.25)
 It’s still the same simple player with the same functionality, but:
 1. It’s no longer just a one-day experiment with the media3 library meant to create a usable app for personal use. It now follows Clean Architecture and MVI principles.
-2. Fixed a bug on Android 15+, when the video had an incorrect aspect ratio on first launch.
+2. Fixed a bug on Android 14+, when the video had an incorrect aspect ratio on first launch.
